@@ -8,12 +8,16 @@ The unit I bought previously belonged to the Institute of Musicology at the Joha
 
 Because this reverb is quite special and very rare, I'm doing everything I can to preserve it and share as much information about it, as possible.
 
-Ursa Major Inc was founded by Christopher Moore in 1977 and sold to AKG in 1984. Christopher Moore's website is now at http://sevenwoodsdesign.com/index.html
+Ursa Major Inc was founded by Christopher Moore in 1977 and sold to AKG in 1984. Christopher Moore's website was previously available at http://sevenwoodsdesign.com/index.html but can now only be accessed through archive.org
 
 Sean Costello from ValhallaDSP has a couple of interesting articles about Christopher Moore & the technology he used
 https://valhalladsp.com/2010/05/14/stability-through-time-variation-ursa-major-space-station/
 https://valhalladsp.wordpress.com/2010/12/21/the-reverb-beard/
 https://valhalladsp.wordpress.com/2009/07/30/modulation-in-reverbs-reality-and-unreality/
+
+Christopher Moore's initial patents for the SST and Stargate algorithms can be fully accessed through google patents
+https://patents.google.com/patent/US4303991A/
+https://patents.google.com/patent/US4268717A/
 
 I have to admit, that I am in a bit of a tight spot.
 According to several comments on the first Valhalladsp article above, it is not possible to contact Christopher Moore via email anymore.
