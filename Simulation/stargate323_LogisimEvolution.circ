@@ -1,0 +1,1478 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project source="3.4.5" version="1.0">
+  This file is intended to be loaded by Logisim-evolution (https://github.com/reds-heig/logisim-evolution).
+
+  <lib desc="#Wiring" name="0">
+    <tool name="Splitter">
+      <a name="facing" val="west"/>
+      <a name="fanout" val="8"/>
+      <a name="incoming" val="8"/>
+    </tool>
+    <tool name="Pin">
+      <a name="appearance" val="NewPins"/>
+    </tool>
+    <tool name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="labelloc" val="east"/>
+    </tool>
+    <tool name="Constant">
+      <a name="value" val="0xf"/>
+      <a name="width" val="4"/>
+    </tool>
+  </lib>
+  <lib desc="#Gates" name="1">
+    <tool name="PLA">
+      <a name="table" val=""/>
+    </tool>
+  </lib>
+  <lib desc="#Plexers" name="2">
+    <tool name="Multiplexer">
+      <a name="enable" val="false"/>
+      <a name="width" val="4"/>
+    </tool>
+    <tool name="Demultiplexer">
+      <a name="enable" val="false"/>
+    </tool>
+  </lib>
+  <lib desc="#Arithmetic" name="3"/>
+  <lib desc="#Memory" name="4">
+    <tool name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="T Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="J-K Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="S-R Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="Register">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="Counter">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="Shift Register">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="Random">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="RAM">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool name="ROM">
+      <a name="addrWidth" val="11"/>
+      <a name="appearance" val="logisim_evolution"/>
+      <a name="contents">addr/data: 11 8
+0
+</a>
+    </tool>
+  </lib>
+  <lib desc="#I/O" name="5">
+    <tool name="DipSwitch">
+      <a name="number" val="4"/>
+    </tool>
+    <tool name="DotMatrix">
+      <a name="matrixcols" val="1"/>
+      <a name="matrixrows" val="8"/>
+    </tool>
+  </lib>
+  <lib desc="#TTL" name="6"/>
+  <lib desc="#TCL" name="7">
+    <tool name="TclGeneric">
+      <a name="content">library ieee;
+use ieee.std_logic_1164.all;
+
+entity TCL_Generic is
+  port(
+    --Insert input ports below
+    horloge_i  : in  std_logic;                    -- input bit example
+    val_i      : in  std_logic_vector(3 downto 0); -- input vector example
+
+	  --Insert output ports below
+    max_o      : out std_logic;                    -- output bit example
+    cpt_o      : out std_logic_Vector(3 downto 0)  -- output vector example
+  );
+end TCL_Generic;
+</a>
+    </tool>
+  </lib>
+  <lib desc="#Base" name="8">
+    <tool name="Text Tool">
+      <a name="font" val="SansSerif plain 12"/>
+      <a name="halign" val="center"/>
+      <a name="text" val=""/>
+      <a name="valign" val="base"/>
+    </tool>
+  </lib>
+  <lib desc="#BFH-Praktika" name="9"/>
+  <lib desc="#Input/Output-Extra" name="10">
+    <tool name="Digital Oscilloscope">
+      <a name="inputs" val="32"/>
+    </tool>
+  </lib>
+  <lib desc="#Soc" name="11">
+    <tool name="Rv32im">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+    <tool name="Nios2">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+    <tool name="SocBus">
+      <a name="SocBusIdentifier" val="0x0000017919FA369D557e648c"/>
+    </tool>
+    <tool name="Socmem">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+    <tool name="SocPio">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+    <tool name="SocVga">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+    <tool name="SocJtagUart">
+      <a name="SocBusSelection" val=""/>
+    </tool>
+  </lib>
+  <main name="main"/>
+  <options>
+    <a name="gateUndefined" val="ignore"/>
+    <a name="simlimit" val="1000"/>
+    <a name="simrand" val="0"/>
+  </options>
+  <mappings>
+    <tool lib="8" map="Button2" name="Menu Tool"/>
+    <tool lib="8" map="Button3" name="Menu Tool"/>
+    <tool lib="8" map="Ctrl Button1" name="Menu Tool"/>
+  </mappings>
+  <toolbar>
+    <tool lib="8" name="Poke Tool"/>
+    <tool lib="8" name="Edit Tool"/>
+    <tool lib="8" name="Wiring Tool"/>
+    <tool lib="8" name="Text Tool">
+      <a name="font" val="SansSerif plain 12"/>
+      <a name="halign" val="center"/>
+      <a name="text" val=""/>
+      <a name="valign" val="base"/>
+    </tool>
+    <sep/>
+    <tool lib="0" name="Pin">
+      <a name="appearance" val="NewPins"/>
+    </tool>
+    <tool lib="0" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+    </tool>
+    <sep/>
+    <tool lib="1" name="NOT Gate"/>
+    <tool lib="1" name="AND Gate"/>
+    <tool lib="1" name="OR Gate"/>
+    <tool lib="1" name="XOR Gate"/>
+    <tool lib="1" name="NAND Gate"/>
+    <tool lib="1" name="NOR Gate"/>
+    <sep/>
+    <tool lib="4" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+    <tool lib="4" name="Register">
+      <a name="appearance" val="logisim_evolution"/>
+    </tool>
+  </toolbar>
+  <circuit name="main">
+    <a name="appearance" val="logisim_evolution"/>
+    <a name="circuit" val="main"/>
+    <a name="circuitnamedboxfixedsize" val="true"/>
+    <a name="circuitvhdlpath" val=""/>
+    <a name="clabel" val=""/>
+    <a name="clabelfont" val="SansSerif bold 16"/>
+    <a name="clabelup" val="west"/>
+    <comp lib="0" loc="(1000,1300)" name="Splitter">
+      <a name="fanout" val="8"/>
+      <a name="incoming" val="8"/>
+    </comp>
+    <comp lib="0" loc="(1000,880)" name="Splitter">
+      <a name="fanout" val="8"/>
+      <a name="incoming" val="8"/>
+    </comp>
+    <comp lib="0" loc="(1250,520)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="SYNC_CLR"/>
+      <a name="labelloc" val="south"/>
+    </comp>
+    <comp lib="0" loc="(1280,1370)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nER"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1290,1300)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="ISH"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1290,1440)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nEL"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1070)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nS"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1140)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nMOD"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1510)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nEF"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1580)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nET"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1650)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="MSBE"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,1720)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="LSBE"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,720)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="DAC"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,860)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="CAS"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1300,930)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="RAS"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1310,1230)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nDACX"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1310,790)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="DACEN"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1320,1000)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="SARCK"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1340,400)" name="Constant"/>
+    <comp lib="0" loc="(1350,420)" name="Constant"/>
+    <comp lib="0" loc="(1360,750)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nDAC"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1540,460)" name="Splitter">
+      <a name="fanout" val="8"/>
+      <a name="incoming" val="8"/>
+    </comp>
+    <comp lib="0" loc="(1740,320)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="nTCB1"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,350)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB2"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,380)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB3"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,410)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB4"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,440)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB5"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,470)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB6"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(1740,500)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TCB7"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(2130,270)" name="Splitter">
+      <a name="facing" val="west"/>
+      <a name="fanout" val="13"/>
+      <a name="incoming" val="13"/>
+    </comp>
+    <comp lib="0" loc="(2270,520)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="MODa"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="0" loc="(2400,450)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="DLY_PROM"/>
+      <a name="labelloc" val="east"/>
+      <a name="radix" val="16"/>
+    </comp>
+    <comp lib="0" loc="(2420,340)" name="Constant"/>
+    <comp lib="0" loc="(2480,320)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="DLY_REG"/>
+      <a name="labelloc" val="east"/>
+      <a name="radix" val="16"/>
+    </comp>
+    <comp lib="0" loc="(350,750)" name="Clock">
+      <a name="label" val="sysclk"/>
+    </comp>
+    <comp lib="0" loc="(350,800)" name="Clock">
+      <a name="highDuration" val="4"/>
+      <a name="label" val="clk"/>
+      <a name="lowDuration" val="4"/>
+    </comp>
+    <comp lib="0" loc="(440,770)" name="Constant"/>
+    <comp lib="0" loc="(440,790)" name="Constant"/>
+    <comp lib="0" loc="(630,830)" name="Splitter">
+      <a name="fanout" val="8"/>
+      <a name="incoming" val="8"/>
+    </comp>
+    <comp lib="0" loc="(690,800)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="TIM"/>
+      <a name="labelloc" val="east"/>
+      <a name="radix" val="10unsigned"/>
+    </comp>
+    <comp lib="1" loc="(1230,390)" name="NOT Gate"/>
+    <comp lib="1" loc="(1280,390)" name="NOT Gate"/>
+    <comp lib="1" loc="(1340,750)" name="NOT Gate"/>
+    <comp lib="1" loc="(2230,520)" name="NOT Gate"/>
+    <comp lib="1" loc="(890,760)" name="NOT Gate"/>
+    <comp lib="4" loc="(1120,380)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1120,450)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1060)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1130)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1220)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1290)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1360)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1430)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1500)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1570)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1640)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,1710)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,710)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,780)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,850)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,920)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1170,990)" name="D Flip-Flop">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(1350,350)" name="Counter">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(2130,260)" name="ROM">
+      <a name="addrWidth" val="13"/>
+      <a name="appearance" val="logisim_evolution"/>
+      <a name="contents">addr/data: 13 8
+16*0 5 0 7 0 9 0 b
+0 e 0 10 0 14 0 16
+0 17 0 19 0 1c 0 1f
+0 21 0 23 0 25 90 6
+40 5 f0 3 a0 2 c0 9
+80 7 40 5 0 3 19*0 5
+0 7 0 9 0 b 0 e
+0 10 0 14 0 16 0 17
+0 19 0 1c 0 1f 0 21
+0 23 0 25 d0 7 80 6
+30 5 e0 3 0 b c0 8
+80 6 40 4 19*0 5 0 7
+0 9 0 b 0 e 0 10
+0 14 0 16 0 17 0 19
+0 1c 0 1f 0 21 0 23
+0 25 50 5 0 4 b0 2
+60 1 80 8 40 6 0 4
+c0 1 19*0 5 0 7 0 9
+0 b 0 e 0 10 0 14
+0 16 0 17 0 19 0 1c
+0 1f 0 21 0 23 0 25
+10 4 c0 2 70 1 20 0
+40 7 0 5 c0 2 80 20*0
+5 0 7 0 9 0 b 0
+e 0 10 0 14 0 16 0
+17 0 19 0 1c 0 1f 0
+21 0 23 0 25 50 a 0
+9 b0 7 60 6 80 d 40
+b 0 9 c0 6 19*0 5 0
+7 0 9 0 b 0 e 0
+10 0 14 0 16 0 17 0
+19 0 1c 0 1f 0 21 0
+23 0 25 10 9 c0 7 70
+6 20 5 40 c 0 a c0
+7 80 5 19*0 5 0 7 0
+9 0 b 0 e 0 10 0
+14 0 16 0 17 0 19 0
+1c 0 1f 0 21 0 23 0
+25 90 b 40 a f0 8 a0
+7 c0 e 80 c 40 a 0
+8 19*0 5 0 7 0 9 0
+b 0 e 0 10 0 14 0
+16 0 17 0 19 0 1c 0
+1f 0 21 0 23 0 25 10
+e c0 c 70 b 20 a 40
+11 0 f c0 c 80 a 19*0
+8 0 a 0 b 0 10 0
+11 0 15 0 16 0 19 0
+1c 0 1f 0 22 0 24 0
+27 0 2a 0 2c e0 7 20
+6 60 4 a0 2 20 c 20
+9 20 6 20 3 19*0 8 0
+a 0 b 0 10 0 11 0
+15 0 16 0 19 0 1c 0
+1f 0 22 0 24 0 27 0
+2a 0 2c 20 9 60 7 a0
+5 e0 3 60 d 60 a 60
+7 60 4 19*0 8 0 a 0
+b 0 10 0 11 0 15 0
+16 0 19 0 1c 0 1f 0
+22 0 24 0 27 0 2a 0
+2c a0 6 e0 4 20 3 60
+1 e0 a e0 7 e0 4 e0
+1 19*0 8 0 a 0 b 0
+10 0 11 0 15 0 16 0
+19 0 1c 0 1f 0 22 0
+24 0 27 0 2a 0 2c 60
+5 a0 3 e0 1 20 0 a0
+9 a0 6 a0 3 a0 20*0 8
+0 a 0 b 0 10 0 11
+0 15 0 16 0 19 0 1c
+0 1f 0 22 0 24 0 27
+0 2a 0 2c a0 b e0 9
+20 8 60 6 e0 f e0 c
+e0 9 e0 6 19*0 8 0 a
+0 b 0 10 0 11 0 15
+0 16 0 19 0 1c 0 1f
+0 22 0 24 0 27 0 2a
+0 2c 60 a a0 8 e0 6
+20 5 a0 e a0 b a0 8
+a0 5 19*0 8 0 a 0 b
+0 10 0 11 0 15 0 16
+0 19 0 1c 0 1f 0 22
+0 24 0 27 0 2a 0 2c
+e0 c 20 b 60 9 a0 7
+20 11 20 e 20 b 20 8
+19*0 8 0 a 0 b 0 10
+0 11 0 15 0 16 0 19
+0 1c 0 1f 0 22 0 24
+0 27 0 2a 0 2c 60 f
+a0 d e0 b 20 a a0 13
+a0 10 a0 d a0 a 19*0 3
+0 5 0 6 0 8 0 b
+0 c 0 e 0 11 0 12
+0 14 0 17 0 18 0 19
+0 1d 0 1e 40 5 60 4
+80 3 a0 2 60 7 e0 5
+60 4 e0 2 19*0 3 0 5
+0 6 0 8 0 b 0 c
+0 e 0 11 0 12 0 14
+0 17 0 18 0 19 0 1d
+0 1e 80 6 a0 5 c0 4
+e0 3 a0 8 20 7 a0 5
+20 4 19*0 3 0 5 0 6
+0 8 0 b 0 c 0 e
+0 11 0 12 0 14 0 17
+0 18 0 19 0 1d 0 1e
+0 4 20 3 40 2 60 1
+20 6 a0 4 20 3 a0 1
+19*0 3 0 5 0 6 0 8
+0 b 0 c 0 e 0 11
+0 12 0 14 0 17 0 18
+0 19 0 1d 0 1e c0 2
+e0 1 0 1 20 0 e0 4
+60 3 e0 1 60 20*0 3 0
+5 0 6 0 8 0 b 0
+c 0 e 0 11 0 12 0
+14 0 17 0 18 0 19 0
+1d 0 1e 0 9 20 8 40
+7 60 6 20 b a0 9 20
+8 a0 6 19*0 3 0 5 0
+6 0 8 0 b 0 c 0
+e 0 11 0 12 0 14 0
+17 0 18 0 19 0 1d 0
+1e c0 7 e0 6 0 6 20
+5 e0 9 60 8 e0 6 60
+5 19*0 3 0 5 0 6 0
+8 0 b 0 c 0 e 0
+11 0 12 0 14 0 17 0
+18 0 19 0 1d 0 1e 40
+a 60 9 80 8 a0 7 60
+c e0 a 60 9 e0 7 19*0
+3 0 5 0 6 0 8 0
+b 0 c 0 e 0 11 0
+12 0 14 0 17 0 18 0
+19 0 1d 0 1e c0 c e0
+b 0 b 20 a e0 e 60
+d e0 b 60 a 19*0 2 0
+4 0 5 0 7 0 8 0
+9 0 b 0 d 0 e 0
+f 0 10 0 12 0 14 0
+15 0 16 f0 3 80 3 10
+3 a0 2 0 5 40 4 80
+3 c0 2 19*0 2 0 4 0
+5 0 7 0 8 0 9 0
+b 0 d 0 e 0 f 0
+10 0 12 0 14 0 15 0
+16 30 5 c0 4 50 4 e0
+3 40 6 80 5 c0 4 0
+4 19*0 2 0 4 0 5 0
+7 0 8 0 9 0 b 0
+d 0 e 0 f 0 10 0
+12 0 14 0 15 0 16 b0
+2 40 2 d0 1 60 1 c0
+3 0 3 40 2 80 1 19*0
+2 0 4 0 5 0 7 0
+8 0 9 0 b 0 d 0
+e 0 f 0 10 0 12 0
+14 0 15 0 16 70 1 0
+1 90 0 20 0 80 2 c0
+1 0 1 40 20*0 2 0 4
+0 5 0 7 0 8 0 9
+0 b 0 d 0 e 0 f
+0 10 0 12 0 14 0 15
+0 16 b0 7 40 7 d0 6
+60 6 c0 8 0 8 40 7
+80 6 19*0 2 0 4 0 5
+0 7 0 8 0 9 0 b
+0 d 0 e 0 f 0 10
+0 12 0 14 0 15 0 16
+70 6 0 6 90 5 20 5
+80 7 c0 6 0 6 40 5
+19*0 2 0 4 0 5 0 7
+0 8 0 9 0 b 0 d
+0 e 0 f 0 10 0 12
+0 14 0 15 0 16 f0 8
+80 8 10 8 a0 7 0 a
+40 9 80 8 c0 7 19*0 2
+0 4 0 5 0 7 0 8
+0 9 0 b 0 d 0 e
+0 f 0 10 0 12 0 14
+0 15 0 16 70 b 0 b
+90 a 20 a 80 c c0 b
+0 b 40 a 19*0 f 0 10
+0 11 0 14 0 15 0 19
+0 1c 0 20 0 24 0 28
+0 2c 0 2f 0 34 0 3b
+0 3f 80 a e0 7 40 5
+a0 2 e0 10 60 c e0 7
+60 3 19*0 f 0 10 0 11
+0 14 0 15 0 19 0 1c
+0 20 0 24 0 28 0 2c
+0 2f 0 34 0 3b 0 3f
+c0 b 20 9 80 6 e0 3
+20 12 a0 d 20 9 a0 4
+19*0 f 0 10 0 11 0 14
+0 15 0 19 0 1c 0 20
+0 24 0 28 0 2c 0 2f
+0 34 0 3b 0 3f 40 9
+a0 6 0 4 60 1 a0 f
+20 b a0 6 20 2 19*0 f
+0 10 0 11 0 14 0 15
+0 19 0 1c 0 20 0 24
+0 28 0 2c 0 2f 0 34
+0 3b 0 3f 0 8 60 5
+c0 2 20 0 60 e e0 9
+60 5 e0 20*0 f 0 10 0
+11 0 14 0 15 0 19 0
+1c 0 20 0 24 0 28 0
+2c 0 2f 0 34 0 3b 0
+3f 40 e a0 b 0 9 60
+6 a0 14 20 10 a0 b 20
+7 19*0 f 0 10 0 11 0
+14 0 15 0 19 0 1c 0
+20 0 24 0 28 0 2c 0
+2f 0 34 0 3b 0 3f 0
+d 60 a c0 7 20 5 60
+13 e0 e 60 a e0 5 19*0
+f 0 10 0 11 0 14 0
+15 0 19 0 1c 0 20 0
+24 0 28 0 2c 0 2f 0
+34 0 3b 0 3f 80 f e0
+c 40 a a0 7 e0 15 60
+11 e0 c 60 8 19*0 f 0
+10 0 11 0 14 0 15 0
+19 0 1c 0 20 0 24 0
+28 0 2c 0 2f 0 34 0
+3b 0 3f 0 12 60 f c0
+c 20 a 60 18 e0 13 60
+f e0 a 19*0 b 0 e 0
+f 0 11 0 14 0 17 0
+1b 0 1d 0 20 0 24 0
+28 0 2a 0 2e 0 32 0
+37 30 9 0 7 d0 4 a0
+2 80 e c0 a 0 7 40
+3 19*0 b 0 e 0 f 0
+11 0 14 0 17 0 1b 0
+1d 0 20 0 24 0 28 0
+2a 0 2e 0 32 0 37 70
+a 40 8 10 6 e0 3 c0
+f 0 c 40 8 80 4 19*0
+b 0 e 0 f 0 11 0
+14 0 17 0 1b 0 1d 0
+20 0 24 0 28 0 2a 0
+2e 0 32 0 37 f0 7 c0
+5 90 3 60 1 40 d 80
+9 c0 5 0 2 19*0 b 0
+e 0 f 0 11 0 14 0
+17 0 1b 0 1d 0 20 0
+24 0 28 0 2a 0 2e 0
+32 0 37 b0 6 80 4 50
+2 20 0 0 c 40 8 80
+4 c0 20*0 b 0 e 0 f
+0 11 0 14 0 17 0 1b
+0 1d 0 20 0 24 0 28
+0 2a 0 2e 0 32 0 37
+f0 c c0 a 90 8 60 6
+40 12 80 e c0 a 0 7
+19*0 b 0 e 0 f 0 11
+0 14 0 17 0 1b 0 1d
+0 20 0 24 0 28 0 2a
+0 2e 0 32 0 37 b0 b
+80 9 50 7 20 5 0 11
+40 d 80 9 c0 5 19*0 b
+0 e 0 f 0 11 0 14
+0 17 0 1b 0 1d 0 20
+0 24 0 28 0 2a 0 2e
+0 32 0 37 30 e 0 c
+d0 9 a0 7 80 13 c0 f
+0 c 40 8 19*0 b 0 e
+0 f 0 11 0 14 0 17
+0 1b 0 1d 0 20 0 24
+0 28 0 2a 0 2e 0 32
+0 37 b0 10 80 e 50 c
+20 a 0 16 40 12 80 e
+c0 a 19*0 14 0 16 0 19
+0 1c 0 20 0 22 0 25
+0 2a 0 2d 0 2f 0 31
+0 35 0 37 0 3b 0 3f
+d0 b c0 8 b0 5 a0 2
+40 13 0 e c0 8 80 3
+19*0 14 0 16 0 19 0 1c
+0 20 0 22 0 25 0 2a
+0 2d 0 2f 0 31 0 35
+0 37 0 3b 0 3f 10 d
+0 a f0 6 e0 3 80 14
+40 f 0 a c0 4 19*0 14
+0 16 0 19 0 1c 0 20
+0 22 0 25 0 2a 0 2d
+0 2f 0 31 0 35 0 37
+0 3b 0 3f 90 a 80 7
+70 4 60 1 0 12 c0 c
+80 7 40 2 19*0 14 0 16
+0 19 0 1c 0 20 0 22
+0 25 0 2a 0 2d 0 2f
+0 31 0 35 0 37 0 3b
+0 3f 50 9 40 6 30 3
+20 0 c0 10 80 b 40 6
+0 1 19*0 14 0 16 0 19
+0 1c 0 20 0 22 0 25
+0 2a 0 2d 0 2f 0 31
+0 35 0 37 0 3b 0 3f
+90 f 80 c 70 9 60 6
+0 17 c0 11 80 c 40 7
+19*0 14 0 16 0 19 0 1c
+0 20 0 22 0 25 0 2a
+0 2d 0 2f 0 31 0 35
+0 37 0 3b 0 3f 50 e
+40 b 30 8 20 5 c0 15
+80 10 40 b 0 6 19*0 14
+0 16 0 19 0 1c 0 20
+0 22 0 25 0 2a 0 2d
+0 2f 0 31 0 35 0 37
+0 3b 0 3f d0 10 c0 d
+b0 a a0 7 40 18 0 13
+c0 d 80 8 19*0 14 0 16
+0 19 0 1c 0 20 0 22
+0 25 0 2a 0 2d 0 2f
+0 31 0 35 0 37 0 3b
+0 3f 50 13 40 10 30 d
+20 a c0 1a 80 15 40 10
+0 b 19*0 19 0 1d 0 1f
+0 21 0 25 0 29 0 2b
+0 30 0 32 0 34 0 37
+0 38 0 3a 0 3d 0 3f
+20 d a0 9 20 6 a0 2
+a0 15 a0 f a0 9 a0 3
+19*0 19 0 1d 0 1f 0 21
+0 25 0 29 0 2b 0 30
+0 32 0 34 0 37 0 38
+0 3a 0 3d 0 3f 60 e
+e0 a 60 7 e0 3 e0 16
+e0 10 e0 a e0 4 19*0 19
+0 1d 0 1f 0 21 0 25
+0 29 0 2b 0 30 0 32
+0 34 0 37 0 38 0 3a
+0 3d 0 3f e0 b 60 8
+e0 4 60 1 60 14 60 e
+60 8 60 2 19*0 19 0 1d
+0 1f 0 21 0 25 0 29
+0 2b 0 30 0 32 0 34
+0 37 0 38 0 3a 0 3d
+0 3f a0 a 20 7 a0 3
+20 0 20 13 20 d 20 7
+20 1 19*0 19 0 1d 0 1f
+0 21 0 25 0 29 0 2b
+0 30 0 32 0 34 0 37
+0 38 0 3a 0 3d 0 3f
+e0 10 60 d e0 9 60 6
+60 19 60 13 60 d 60 7
+19*0 19 0 1d 0 1f 0 21
+0 25 0 29 0 2b 0 30
+0 32 0 34 0 37 0 38
+0 3a 0 3d 0 3f a0 f
+20 c a0 8 20 5 20 18
+20 12 20 c 20 6 19*0 19
+0 1d 0 1f 0 21 0 25
+0 29 0 2b 0 30 0 32
+0 34 0 37 0 38 0 3a
+0 3d 0 3f 20 12 a0 e
+20 b a0 7 a0 1a a0 14
+a0 e a0 8 19*0 19 0 1d
+0 1f 0 21 0 25 0 29
+0 2b 0 30 0 32 0 34
+0 37 0 38 0 3a 0 3d
+0 3f a0 14 20 11 a0 d
+20 a 20 1d 20 17 20 11
+20 b 19*0 5 0 7 0 9
+0 b 0 e 0 10 0 14
+0 16 0 17 0 19 0 1c
+0 1f 0 21 0 23 0 25
+90 15 40 14 f0 12 a0 11
+c0 18 80 16 40 14 0 12
+19*0 5 0 7 0 9 0 b
+0 e 0 10 0 14 0 16
+0 17 0 19 0 1c 0 1f
+0 21 0 23 0 25 50 19
+0 18 b0 16 60 15 80 1c
+40 1a 0 18 c0 15 19*0 5
+0 7 0 9 0 b 0 e
+0 10 0 14 0 16 0 17
+0 19 0 1c 0 1f 0 21
+0 23 0 25 10 13 c0 11
+70 10 20 f 40 16 0 14
+c0 11 80 f 19*0 5 0 7
+0 9 0 b 0 e 0 10
+0 14 0 16 0 17 0 19
+0 1c 0 1f 0 21 0 23
+0 25 90 10 40 f f0 d
+a0 c c0 13 80 11 40 f
+0 d 19*0 5 0 7 0 9
+0 b 0 e 0 10 0 14
+0 16 0 17 0 19 0 1c
+0 1f 0 21 0 23 0 25
+10 22 c0 20 70 1f 20 1e
+40 25 0 23 c0 20 80 1e
+19*0 5 0 7 0 9 0 b
+0 e 0 10 0 14 0 16
+0 17 0 19 0 1c 0 1f
+0 21 0 23 0 25 10 1d
+c0 1b 70 1a 20 19 40 20
+0 1e c0 1b 80 19 19*0 5
+0 7 0 9 0 b 0 e
+0 10 0 14 0 16 0 17
+0 19 0 1c 0 1f 0 21
+0 23 0 25 10 27 c0 25
+70 24 20 23 40 2a 0 28
+c0 25 80 23 19*0 5 0 7
+0 9 0 b 0 e 0 10
+0 14 0 16 0 17 0 19
+0 1c 0 1f 0 21 0 23
+0 25 10 2c c0 2a 70 29
+20 28 40 2f 0 2d c0 2a
+80 28 19*0 8 0 a 0 b
+0 10 0 11 0 15 0 16
+0 19 0 1c 0 1f 0 22
+0 24 0 27 0 2a 0 2c
+e0 16 20 15 60 13 a0 11
+20 1b 20 18 20 15 20 12
+19*0 8 0 a 0 b 0 10
+0 11 0 15 0 16 0 19
+0 1c 0 1f 0 22 0 24
+0 27 0 2a 0 2c a0 1a
+e0 18 20 17 60 15 e0 1e
+e0 1b e0 18 e0 15 19*0 8
+0 a 0 b 0 10 0 11
+0 15 0 16 0 19 0 1c
+0 1f 0 22 0 24 0 27
+0 2a 0 2c 60 14 a0 12
+e0 10 20 f a0 18 a0 15
+a0 12 a0 f 19*0 8 0 a
+0 b 0 10 0 11 0 15
+0 16 0 19 0 1c 0 1f
+0 22 0 24 0 27 0 2a
+0 2c e0 11 20 10 60 e
+a0 c 20 16 20 13 20 10
+20 d 19*0 8 0 a 0 b
+0 10 0 11 0 15 0 16
+0 19 0 1c 0 1f 0 22
+0 24 0 27 0 2a 0 2c
+60 23 a0 21 e0 1f 20 1e
+a0 27 a0 24 a0 21 a0 1e
+19*0 8 0 a 0 b 0 10
+0 11 0 15 0 16 0 19
+0 1c 0 1f 0 22 0 24
+0 27 0 2a 0 2c 60 1e
+a0 1c e0 1a 20 19 a0 22
+a0 1f a0 1c a0 19 19*0 8
+0 a 0 b 0 10 0 11
+0 15 0 16 0 19 0 1c
+0 1f 0 22 0 24 0 27
+0 2a 0 2c 60 28 a0 26
+e0 24 20 23 a0 2c a0 29
+a0 26 a0 23 19*0 8 0 a
+0 b 0 10 0 11 0 15
+0 16 0 19 0 1c 0 1f
+0 22 0 24 0 27 0 2a
+0 2c 60 2d a0 2b e0 29
+20 28 a0 31 a0 2e a0 2b
+a0 28 19*0 3 0 5 0 6
+0 8 0 b 0 c 0 e
+0 11 0 12 0 14 0 17
+0 18 0 19 0 1d 0 1e
+40 14 60 13 80 12 a0 11
+60 16 e0 14 60 13 e0 11
+19*0 3 0 5 0 6 0 8
+0 b 0 c 0 e 0 11
+0 12 0 14 0 17 0 18
+0 19 0 1d 0 1e 0 18
+20 17 40 16 60 15 20 1a
+a0 18 20 17 a0 15 19*0 3
+0 5 0 6 0 8 0 b
+0 c 0 e 0 11 0 12
+0 14 0 17 0 18 0 19
+0 1d 0 1e c0 11 e0 10
+0 10 20 f e0 13 60 12
+e0 10 60 f 19*0 3 0 5
+0 6 0 8 0 b 0 c
+0 e 0 11 0 12 0 14
+0 17 0 18 0 19 0 1d
+0 1e 40 f 60 e 80 d
+a0 c 60 11 e0 f 60 e
+e0 c 19*0 3 0 5 0 6
+0 8 0 b 0 c 0 e
+0 11 0 12 0 14 0 17
+0 18 0 19 0 1d 0 1e
+c0 20 e0 1f 0 1f 20 1e
+e0 22 60 21 e0 1f 60 1e
+19*0 3 0 5 0 6 0 8
+0 b 0 c 0 e 0 11
+0 12 0 14 0 17 0 18
+0 19 0 1d 0 1e c0 1b
+e0 1a 0 1a 20 19 e0 1d
+60 1c e0 1a 60 19 19*0 3
+0 5 0 6 0 8 0 b
+0 c 0 e 0 11 0 12
+0 14 0 17 0 18 0 19
+0 1d 0 1e c0 25 e0 24
+0 24 20 23 e0 27 60 26
+e0 24 60 23 19*0 3 0 5
+0 6 0 8 0 b 0 c
+0 e 0 11 0 12 0 14
+0 17 0 18 0 19 0 1d
+0 1e c0 2a e0 29 0 29
+20 28 e0 2c 60 2b e0 29
+60 28 19*0 2 0 4 0 5
+0 7 0 8 0 9 0 b
+0 d 0 e 0 f 0 10
+0 12 0 14 0 15 0 16
+f0 12 80 12 10 12 a0 11
+0 14 40 13 80 12 c0 11
+19*0 2 0 4 0 5 0 7
+0 8 0 9 0 b 0 d
+0 e 0 f 0 10 0 12
+0 14 0 15 0 16 b0 16
+40 16 d0 15 60 15 c0 17
+0 17 40 16 80 15 19*0 2
+0 4 0 5 0 7 0 8
+0 9 0 b 0 d 0 e
+0 f 0 10 0 12 0 14
+0 15 0 16 70 10 0 10
+90 f 20 f 80 11 c0 10
+0 10 40 f 19*0 2 0 4
+0 5 0 7 0 8 0 9
+0 b 0 d 0 e 0 f
+0 10 0 12 0 14 0 15
+0 16 f0 d 80 d 10 d
+a0 c 0 f 40 e 80 d
+c0 c 19*0 2 0 4 0 5
+0 7 0 8 0 9 0 b
+0 d 0 e 0 f 0 10
+0 12 0 14 0 15 0 16
+70 1f 0 1f 90 1e 20 1e
+80 20 c0 1f 0 1f 40 1e
+19*0 2 0 4 0 5 0 7
+0 8 0 9 0 b 0 d
+0 e 0 f 0 10 0 12
+0 14 0 15 0 16 70 1a
+0 1a 90 19 20 19 80 1b
+c0 1a 0 1a 40 19 19*0 2
+0 4 0 5 0 7 0 8
+0 9 0 b 0 d 0 e
+0 f 0 10 0 12 0 14
+0 15 0 16 70 24 0 24
+90 23 20 23 80 25 c0 24
+0 24 40 23 19*0 2 0 4
+0 5 0 7 0 8 0 9
+0 b 0 d 0 e 0 f
+0 10 0 12 0 14 0 15
+0 16 70 29 0 29 90 28
+20 28 80 2a c0 29 0 29
+40 28 19*0 f 0 10 0 11
+0 14 0 15 0 19 0 1c
+0 20 0 24 0 28 0 2c
+0 2f 0 34 0 3b 0 3f
+80 19 e0 16 40 14 a0 11
+e0 1f 60 1b e0 16 60 12
+19*0 f 0 10 0 11 0 14
+0 15 0 19 0 1c 0 20
+0 24 0 28 0 2c 0 2f
+0 34 0 3b 0 3f 40 1d
+a0 1a 0 18 60 15 a0 23
+20 1f a0 1a 20 16 19*0 f
+0 10 0 11 0 14 0 15
+0 19 0 1c 0 20 0 24
+0 28 0 2c 0 2f 0 34
+0 3b 0 3f 0 17 60 14
+c0 11 20 f 60 1d e0 18
+60 14 e0 f 19*0 f 0 10
+0 11 0 14 0 15 0 19
+0 1c 0 20 0 24 0 28
+0 2c 0 2f 0 34 0 3b
+0 3f 80 14 e0 11 40 f
+a0 c e0 1a 60 16 e0 11
+60 d 19*0 f 0 10 0 11
+0 14 0 15 0 19 0 1c
+0 20 0 24 0 28 0 2c
+0 2f 0 34 0 3b 0 3f
+0 26 60 23 c0 20 20 1e
+60 2c e0 27 60 23 e0 1e
+19*0 f 0 10 0 11 0 14
+0 15 0 19 0 1c 0 20
+0 24 0 28 0 2c 0 2f
+0 34 0 3b 0 3f 0 21
+60 1e c0 1b 20 19 60 27
+e0 22 60 1e e0 19 19*0 f
+0 10 0 11 0 14 0 15
+0 19 0 1c 0 20 0 24
+0 28 0 2c 0 2f 0 34
+0 3b 0 3f 0 2b 60 28
+c0 25 20 23 60 31 e0 2c
+60 28 e0 23 19*0 f 0 10
+0 11 0 14 0 15 0 19
+0 1c 0 20 0 24 0 28
+0 2c 0 2f 0 34 0 3b
+0 3f 0 30 60 2d c0 2a
+20 28 60 36 e0 31 60 2d
+e0 28 19*0 b 0 e 0 f
+0 11 0 14 0 17 0 1b
+0 1d 0 20 0 24 0 28
+0 2a 0 2e 0 32 0 37
+30 18 0 16 d0 13 a0 11
+80 1d c0 19 0 16 40 12
+19*0 b 0 e 0 f 0 11
+0 14 0 17 0 1b 0 1d
+0 20 0 24 0 28 0 2a
+0 2e 0 32 0 37 f0 1b
+c0 19 90 17 60 15 40 21
+80 1d c0 19 0 16 19*0 b
+0 e 0 f 0 11 0 14
+0 17 0 1b 0 1d 0 20
+0 24 0 28 0 2a 0 2e
+0 32 0 37 b0 15 80 13
+50 11 20 f 0 1b 40 17
+80 13 c0 f 19*0 b 0 e
+0 f 0 11 0 14 0 17
+0 1b 0 1d 0 20 0 24
+0 28 0 2a 0 2e 0 32
+0 37 30 13 0 11 d0 e
+a0 c 80 18 c0 14 0 11
+40 d 19*0 b 0 e 0 f
+0 11 0 14 0 17 0 1b
+0 1d 0 20 0 24 0 28
+0 2a 0 2e 0 32 0 37
+b0 24 80 22 50 20 20 1e
+0 2a 40 26 80 22 c0 1e
+19*0 b 0 e 0 f 0 11
+0 14 0 17 0 1b 0 1d
+0 20 0 24 0 28 0 2a
+0 2e 0 32 0 37 b0 1f
+80 1d 50 1b 20 19 0 25
+40 21 80 1d c0 19 19*0 b
+0 e 0 f 0 11 0 14
+0 17 0 1b 0 1d 0 20
+0 24 0 28 0 2a 0 2e
+0 32 0 37 b0 29 80 27
+50 25 20 23 0 2f 40 2b
+80 27 c0 23 19*0 b 0 e
+0 f 0 11 0 14 0 17
+0 1b 0 1d 0 20 0 24
+0 28 0 2a 0 2e 0 32
+0 37 b0 2e 80 2c 50 2a
+20 28 0 34 40 30 80 2c
+c0 28 19*0 14 0 16 0 19
+0 1c 0 20 0 22 0 25
+0 2a 0 2d 0 2f 0 31
+0 35 0 37 0 3b 0 3f
+d0 1a c0 17 b0 14 a0 11
+40 22 0 1d c0 17 80 12
+19*0 14 0 16 0 19 0 1c
+0 20 0 22 0 25 0 2a
+0 2d 0 2f 0 31 0 35
+0 37 0 3b 0 3f 90 1e
+80 1b 70 18 60 15 0 26
+c0 20 80 1b 40 16 19*0 14
+0 16 0 19 0 1c 0 20
+0 22 0 25 0 2a 0 2d
+0 2f 0 31 0 35 0 37
+0 3b 0 3f 50 18 40 15
+30 12 20 f c0 1f 80 1a
+40 15 0 10 19*0 14 0 16
+0 19 0 1c 0 20 0 22
+0 25 0 2a 0 2d 0 2f
+0 31 0 35 0 37 0 3b
+0 3f d0 15 c0 12 b0 f
+a0 c 40 1d 0 18 c0 12
+80 d 19*0 14 0 16 0 19
+0 1c 0 20 0 22 0 25
+0 2a 0 2d 0 2f 0 31
+0 35 0 37 0 3b 0 3f
+50 27 40 24 30 21 20 1e
+c0 2e 80 29 40 24 0 1f
+19*0 14 0 16 0 19 0 1c
+0 20 0 22 0 25 0 2a
+0 2d 0 2f 0 31 0 35
+0 37 0 3b 0 3f 50 22
+40 1f 30 1c 20 19 c0 29
+80 24 40 1f 0 1a 19*0 14
+0 16 0 19 0 1c 0 20
+0 22 0 25 0 2a 0 2d
+0 2f 0 31 0 35 0 37
+0 3b 0 3f 50 2c 40 29
+30 26 20 23 c0 33 80 2e
+40 29 0 24 19*0 14 0 16
+0 19 0 1c 0 20 0 22
+0 25 0 2a 0 2d 0 2f
+0 31 0 35 0 37 0 3b
+0 3f 50 31 40 2e 30 2b
+20 28 c0 38 80 33 40 2e
+0 29 19*0 19 0 1d 0 1f
+0 21 0 25 0 29 0 2b
+0 30 0 32 0 34 0 37
+0 38 0 3a 0 3d 0 3f
+20 1c a0 18 20 15 a0 11
+a0 24 a0 1e a0 18 a0 12
+19*0 19 0 1d 0 1f 0 21
+0 25 0 29 0 2b 0 30
+0 32 0 34 0 37 0 38
+0 3a 0 3d 0 3f e0 1f
+60 1c e0 18 60 15 60 28
+60 22 60 1c 60 16 19*0 19
+0 1d 0 1f 0 21 0 25
+0 29 0 2b 0 30 0 32
+0 34 0 37 0 38 0 3a
+0 3d 0 3f a0 19 20 16
+a0 12 20 f 20 22 20 1c
+20 16 20 10 19*0 19 0 1d
+0 1f 0 21 0 25 0 29
+0 2b 0 30 0 32 0 34
+0 37 0 38 0 3a 0 3d
+0 3f 20 17 a0 13 20 10
+a0 c a0 1f a0 19 a0 13
+a0 d 19*0 19 0 1d 0 1f
+0 21 0 25 0 29 0 2b
+0 30 0 32 0 34 0 37
+0 38 0 3a 0 3d 0 3f
+a0 28 20 25 a0 21 20 1e
+20 31 20 2b 20 25 20 1f
+19*0 19 0 1d 0 1f 0 21
+0 25 0 29 0 2b 0 30
+0 32 0 34 0 37 0 38
+0 3a 0 3d 0 3f a0 23
+20 20 a0 1c 20 19 20 2c
+20 26 20 20 20 1a 19*0 19
+0 1d 0 1f 0 21 0 25
+0 29 0 2b 0 30 0 32
+0 34 0 37 0 38 0 3a
+0 3d 0 3f a0 2d 20 2a
+a0 26 20 23 20 36 20 30
+20 2a 20 24 19*0 19 0 1d
+0 1f 0 21 0 25 0 29
+0 2b 0 30 0 32 0 34
+0 37 0 38 0 3a 0 3d
+0 3f a0 32 20 2f a0 2b
+20 28 20 3b 20 35 20 2f
+20 29
+</a>
+      <a name="label" val="P0808"/>
+    </comp>
+    <comp lib="4" loc="(2420,290)" name="Register">
+      <a name="appearance" val="logisim_evolution"/>
+    </comp>
+    <comp lib="4" loc="(440,720)" name="Counter">
+      <a name="appearance" val="logisim_evolution"/>
+      <a name="label" val="TIMING"/>
+    </comp>
+    <comp lib="4" loc="(760,1240)" name="ROM">
+      <a name="appearance" val="logisim_evolution"/>
+      <a name="contents">addr/data: 8 8
+32*7d 24*bd 8*bc 4*3e 4*1e 4*3e 4*2e 4*3e
+4*2e 4*3e 4*2e 4*3e 4*2e 4*3e 4*2e 4*3e
+4*2e 4*3e 4*2e 4*3e 4*2e 4*3e 4*2e 4*3e
+4*2e 4*3e 4*2e 4*3e 4*2e 4*3e 4*2e 4*3e
+4*2e 4*3e 4*2e 4*3e 4*36 4*3e 4*36 3e
+3c 3c 3c 4*34 4*3c 4*34 4*3c 4*38
+4*3c 4*38 4*3c 4*38 4*3d 4*39
+</a>
+      <a name="label" val="P0811"/>
+      <a name="labelvisible" val="true"/>
+    </comp>
+    <comp lib="4" loc="(760,820)" name="ROM">
+      <a name="appearance" val="logisim_evolution"/>
+      <a name="contents">addr/data: 8 8
+e4 e4 e4 e5 e5 c5 5*e5 c5
+4*e5 c5 e5 e5 e5 c5 e5 e5
+e5 c5 e5 e5 c5 e5 e5 c5
+e5 85 a5 e5 e5 e5 c5 e5
+e5 e5 c5 e5 e5 e5 c5 e5
+e5 e5 c5 e5 e5 c5 e5 e5
+c5 e5 e5 d5 f5 75 55 75
+7d fb 9b a3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 73 73 7b
+7b ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 f3 f3 f3 fb
+fb ff fb e3 e3 eb e2 c2
+e2
+</a>
+      <a name="label" val="P0810"/>
+      <a name="labelvisible" val="true"/>
+    </comp>
+    <comp lib="5" loc="(1940,330)" name="DipSwitch">
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@65dbe83a"/>
+      <a name="facing" val="east"/>
+      <a name="label" val="PDL"/>
+      <a name="labelloc" val="north"/>
+      <a name="number" val="4"/>
+    </comp>
+    <comp lib="5" loc="(2020,360)" name="DipSwitch">
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@1d22c0bd"/>
+      <a name="facing" val="east"/>
+      <a name="label" val="PGM"/>
+      <a name="labelloc" val="north"/>
+      <a name="number" val="3"/>
+    </comp>
+    <wire from="(1020,1220)" to="(1150,1220)"/>
+    <wire from="(1020,1230)" to="(1130,1230)"/>
+    <wire from="(1020,1240)" to="(1150,1240)"/>
+    <wire from="(1020,1250)" to="(1120,1250)"/>
+    <wire from="(1020,1260)" to="(1060,1260)"/>
+    <wire from="(1020,1270)" to="(1050,1270)"/>
+    <wire from="(1020,1280)" to="(1040,1280)"/>
+    <wire from="(1020,1290)" to="(1030,1290)"/>
+    <wire from="(1020,460)" to="(1020,800)"/>
+    <wire from="(1020,460)" to="(1110,460)"/>
+    <wire from="(1020,810)" to="(1040,810)"/>
+    <wire from="(1020,820)" to="(1050,820)"/>
+    <wire from="(1020,830)" to="(1120,830)"/>
+    <wire from="(1020,840)" to="(1130,840)"/>
+    <wire from="(1020,850)" to="(1100,850)"/>
+    <wire from="(1020,860)" to="(1030,860)"/>
+    <wire from="(1020,870)" to="(1020,950)"/>
+    <wire from="(1020,950)" to="(1110,950)"/>
+    <wire from="(1030,1290)" to="(1030,1530)"/>
+    <wire from="(1030,1530)" to="(1110,1530)"/>
+    <wire from="(1030,860)" to="(1030,880)"/>
+    <wire from="(1030,880)" to="(1120,880)"/>
+    <wire from="(1040,1280)" to="(1040,1460)"/>
+    <wire from="(1040,1460)" to="(1120,1460)"/>
+    <wire from="(1040,720)" to="(1040,810)"/>
+    <wire from="(1040,720)" to="(1160,720)"/>
+    <wire from="(1050,1270)" to="(1050,1390)"/>
+    <wire from="(1050,1390)" to="(1100,1390)"/>
+    <wire from="(1050,790)" to="(1050,820)"/>
+    <wire from="(1050,790)" to="(1160,790)"/>
+    <wire from="(1060,1260)" to="(1060,1320)"/>
+    <wire from="(1060,1320)" to="(1130,1320)"/>
+    <wire from="(1090,430)" to="(1090,500)"/>
+    <wire from="(1090,430)" to="(1110,430)"/>
+    <wire from="(1090,500)" to="(1090,760)"/>
+    <wire from="(1090,500)" to="(1110,500)"/>
+    <wire from="(1090,760)" to="(1140,760)"/>
+    <wire from="(1100,1040)" to="(1130,1040)"/>
+    <wire from="(1100,1080)" to="(1100,1270)"/>
+    <wire from="(1100,1270)" to="(1140,1270)"/>
+    <wire from="(1100,1390)" to="(1100,1580)"/>
+    <wire from="(1100,1580)" to="(1160,1580)"/>
+    <wire from="(1100,850)" to="(1100,1040)"/>
+    <wire from="(1110,1140)" to="(1160,1140)"/>
+    <wire from="(1110,1530)" to="(1110,1720)"/>
+    <wire from="(1110,1720)" to="(1160,1720)"/>
+    <wire from="(1110,950)" to="(1110,1140)"/>
+    <wire from="(1120,1070)" to="(1160,1070)"/>
+    <wire from="(1120,1250)" to="(1120,1440)"/>
+    <wire from="(1120,1440)" to="(1160,1440)"/>
+    <wire from="(1120,1460)" to="(1120,1650)"/>
+    <wire from="(1120,1650)" to="(1160,1650)"/>
+    <wire from="(1120,830)" to="(1120,860)"/>
+    <wire from="(1120,860)" to="(1160,860)"/>
+    <wire from="(1120,880)" to="(1120,1070)"/>
+    <wire from="(1130,1000)" to="(1130,1040)"/>
+    <wire from="(1130,1000)" to="(1160,1000)"/>
+    <wire from="(1130,1230)" to="(1130,1300)"/>
+    <wire from="(1130,1300)" to="(1160,1300)"/>
+    <wire from="(1130,1320)" to="(1130,1510)"/>
+    <wire from="(1130,1510)" to="(1160,1510)"/>
+    <wire from="(1130,840)" to="(1130,930)"/>
+    <wire from="(1130,930)" to="(1160,930)"/>
+    <wire from="(1140,1040)" to="(1140,1110)"/>
+    <wire from="(1140,1040)" to="(1160,1040)"/>
+    <wire from="(1140,1110)" to="(1140,1180)"/>
+    <wire from="(1140,1110)" to="(1160,1110)"/>
+    <wire from="(1140,1180)" to="(1140,1270)"/>
+    <wire from="(1140,1180)" to="(1160,1180)"/>
+    <wire from="(1140,1270)" to="(1140,1340)"/>
+    <wire from="(1140,1270)" to="(1160,1270)"/>
+    <wire from="(1140,1340)" to="(1140,1410)"/>
+    <wire from="(1140,1340)" to="(1160,1340)"/>
+    <wire from="(1140,1410)" to="(1140,1480)"/>
+    <wire from="(1140,1410)" to="(1160,1410)"/>
+    <wire from="(1140,1480)" to="(1140,1550)"/>
+    <wire from="(1140,1480)" to="(1160,1480)"/>
+    <wire from="(1140,1550)" to="(1140,1620)"/>
+    <wire from="(1140,1550)" to="(1160,1550)"/>
+    <wire from="(1140,1620)" to="(1140,1690)"/>
+    <wire from="(1140,1620)" to="(1160,1620)"/>
+    <wire from="(1140,1690)" to="(1140,1760)"/>
+    <wire from="(1140,1690)" to="(1160,1690)"/>
+    <wire from="(1140,1760)" to="(1160,1760)"/>
+    <wire from="(1140,760)" to="(1140,830)"/>
+    <wire from="(1140,760)" to="(1160,760)"/>
+    <wire from="(1140,830)" to="(1140,900)"/>
+    <wire from="(1140,830)" to="(1160,830)"/>
+    <wire from="(1140,900)" to="(1140,970)"/>
+    <wire from="(1140,900)" to="(1160,900)"/>
+    <wire from="(1140,970)" to="(1140,1040)"/>
+    <wire from="(1140,970)" to="(1160,970)"/>
+    <wire from="(1150,1220)" to="(1150,1230)"/>
+    <wire from="(1150,1230)" to="(1160,1230)"/>
+    <wire from="(1150,1240)" to="(1150,1370)"/>
+    <wire from="(1150,1370)" to="(1160,1370)"/>
+    <wire from="(1170,390)" to="(1180,390)"/>
+    <wire from="(1170,500)" to="(1220,500)"/>
+    <wire from="(1180,320)" to="(1180,390)"/>
+    <wire from="(1180,320)" to="(1740,320)"/>
+    <wire from="(1180,390)" to="(1200,390)"/>
+    <wire from="(1220,1000)" to="(1320,1000)"/>
+    <wire from="(1220,1070)" to="(1300,1070)"/>
+    <wire from="(1220,1140)" to="(1300,1140)"/>
+    <wire from="(1220,1230)" to="(1310,1230)"/>
+    <wire from="(1220,1300)" to="(1290,1300)"/>
+    <wire from="(1220,1370)" to="(1280,1370)"/>
+    <wire from="(1220,1440)" to="(1290,1440)"/>
+    <wire from="(1220,1510)" to="(1300,1510)"/>
+    <wire from="(1220,1580)" to="(1300,1580)"/>
+    <wire from="(1220,1650)" to="(1300,1650)"/>
+    <wire from="(1220,1720)" to="(1300,1720)"/>
+    <wire from="(1220,500)" to="(1220,520)"/>
+    <wire from="(1220,500)" to="(1320,500)"/>
+    <wire from="(1220,520)" to="(1250,520)"/>
+    <wire from="(1220,720)" to="(1270,720)"/>
+    <wire from="(1220,790)" to="(1310,790)"/>
+    <wire from="(1220,860)" to="(1300,860)"/>
+    <wire from="(1220,930)" to="(1300,930)"/>
+    <wire from="(1230,390)" to="(1250,390)"/>
+    <wire from="(1270,720)" to="(1270,750)"/>
+    <wire from="(1270,720)" to="(1300,720)"/>
+    <wire from="(1270,750)" to="(1310,750)"/>
+    <wire from="(1280,390)" to="(1280,430)"/>
+    <wire from="(1280,430)" to="(1350,430)"/>
+    <wire from="(1300,1140)" to="(2170,1140)"/>
+    <wire from="(1320,370)" to="(1320,500)"/>
+    <wire from="(1320,370)" to="(1350,370)"/>
+    <wire from="(1340,400)" to="(1350,400)"/>
+    <wire from="(1340,750)" to="(1360,750)"/>
+    <wire from="(1560,380)" to="(1650,380)"/>
+    <wire from="(1560,390)" to="(1660,390)"/>
+    <wire from="(1560,400)" to="(1660,400)"/>
+    <wire from="(1560,410)" to="(1650,410)"/>
+    <wire from="(1560,420)" to="(1640,420)"/>
+    <wire from="(1560,430)" to="(1630,430)"/>
+    <wire from="(1630,430)" to="(1630,500)"/>
+    <wire from="(1630,500)" to="(1740,500)"/>
+    <wire from="(1640,420)" to="(1640,470)"/>
+    <wire from="(1640,470)" to="(1740,470)"/>
+    <wire from="(1650,350)" to="(1650,380)"/>
+    <wire from="(1650,350)" to="(1740,350)"/>
+    <wire from="(1650,410)" to="(1650,440)"/>
+    <wire from="(1650,440)" to="(1740,440)"/>
+    <wire from="(1660,380)" to="(1660,390)"/>
+    <wire from="(1660,380)" to="(1740,380)"/>
+    <wire from="(1660,400)" to="(1660,410)"/>
+    <wire from="(1660,410)" to="(1740,410)"/>
+    <wire from="(1740,250)" to="(1740,320)"/>
+    <wire from="(1740,250)" to="(2390,250)"/>
+    <wire from="(1740,350)" to="(1840,350)"/>
+    <wire from="(1740,380)" to="(1850,380)"/>
+    <wire from="(1740,410)" to="(1860,410)"/>
+    <wire from="(1740,440)" to="(1870,440)"/>
+    <wire from="(1740,470)" to="(1880,470)"/>
+    <wire from="(1740,500)" to="(1890,500)"/>
+    <wire from="(1840,280)" to="(1840,350)"/>
+    <wire from="(1840,280)" to="(2110,280)"/>
+    <wire from="(1850,290)" to="(1850,380)"/>
+    <wire from="(1850,290)" to="(2110,290)"/>
+    <wire from="(1860,300)" to="(1860,410)"/>
+    <wire from="(1860,300)" to="(2110,300)"/>
+    <wire from="(1870,310)" to="(1870,440)"/>
+    <wire from="(1870,310)" to="(2110,310)"/>
+    <wire from="(1880,320)" to="(1880,470)"/>
+    <wire from="(1880,320)" to="(2110,320)"/>
+    <wire from="(1890,330)" to="(1890,500)"/>
+    <wire from="(1890,330)" to="(2110,330)"/>
+    <wire from="(1940,340)" to="(2110,340)"/>
+    <wire from="(1940,350)" to="(2110,350)"/>
+    <wire from="(1940,360)" to="(2110,360)"/>
+    <wire from="(1940,370)" to="(1960,370)"/>
+    <wire from="(1960,370)" to="(1960,420)"/>
+    <wire from="(1960,420)" to="(2040,420)"/>
+    <wire from="(2020,370)" to="(2110,370)"/>
+    <wire from="(2020,380)" to="(2110,380)"/>
+    <wire from="(2020,390)" to="(2110,390)"/>
+    <wire from="(2040,400)" to="(2040,420)"/>
+    <wire from="(2040,400)" to="(2110,400)"/>
+    <wire from="(2170,520)" to="(2170,1140)"/>
+    <wire from="(2170,520)" to="(2200,520)"/>
+    <wire from="(2230,520)" to="(2270,520)"/>
+    <wire from="(2370,320)" to="(2380,320)"/>
+    <wire from="(2380,320)" to="(2380,450)"/>
+    <wire from="(2380,320)" to="(2420,320)"/>
+    <wire from="(2380,450)" to="(2400,450)"/>
+    <wire from="(2390,250)" to="(2390,360)"/>
+    <wire from="(2390,360)" to="(2420,360)"/>
+    <wire from="(350,800)" to="(400,800)"/>
+    <wire from="(400,1080)" to="(1100,1080)"/>
+    <wire from="(400,800)" to="(400,1080)"/>
+    <wire from="(400,800)" to="(440,800)"/>
+    <wire from="(630,830)" to="(680,830)"/>
+    <wire from="(650,760)" to="(860,760)"/>
+    <wire from="(680,800)" to="(680,830)"/>
+    <wire from="(680,800)" to="(690,800)"/>
+    <wire from="(680,830)" to="(720,830)"/>
+    <wire from="(720,1250)" to="(760,1250)"/>
+    <wire from="(720,830)" to="(720,1250)"/>
+    <wire from="(720,830)" to="(760,830)"/>
+    <wire from="(890,390)" to="(1110,390)"/>
+    <wire from="(890,390)" to="(890,760)"/>
+  </circuit>
+</project>
