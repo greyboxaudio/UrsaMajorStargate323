@@ -10,6 +10,7 @@ int main() {
     int program = 7;    // 0-7
     int preDelay = 15;  // 0-15
     int decayTime = 0;  // 0-7
+    int rateLvl = 0; // 0-15
     int timingA =0;
     int dram[16384];
     int TCB1 = 0;
@@ -28,6 +29,10 @@ int main() {
     int writeAddressCount =0;
     int writeAddress =0;
     int delayReg =0;
+    int modRateCount = 0;
+    int modClockOut = 0;
+    int modCarry =0;
+    int MCCK =0;
 
     for (int i = 0; i < 256; i++)
     {
@@ -55,6 +60,28 @@ int main() {
 
         nMOD = timingA >> 7;
         printf("The value of nMOD is %i\n", nMOD);
+
+        //mod rate counter prom
+        modRateCount = rateLvl | (program << 4);
+        int modClockIn = U71[modRateCount];
+        modClockIn = modClockIn - ((modClockIn / 16)*16);
+
+        //mod rate counter
+        if (TCB7a == 0 && TCB7 == 1 && modCarry == 0)
+        {
+            modClockOut = modClockOut +1;
+        }
+        if (TCB7a == 0 && TCB7 == 1 && modCarry == 1)
+        {
+            modClockOut = modClockIn;
+        }
+        modCarry = modClockOut - ((modClockOut / 15)*15);
+
+        //mod counter clock
+        if (TCB7a == 1 && TCB7 == 0)
+        {
+            MCCK = modCarry;
+        }
 
         //increment write address & wraparound at >16bit
         if (TCB7a == 0 && TCB7 == 1)
@@ -100,7 +127,7 @@ int main() {
         {
             delayReg = delay;
         }
-
+        
         printf("\n");
     }
 
