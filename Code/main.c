@@ -51,7 +51,7 @@ int main()
     for (int j = 0; j < 16384; j++)
     {
         //add static randomization
-        if (rateLvl < 15)
+        if (rateLvl < 16)
         {
             rateLvl = rateLvl + 1;
         }
