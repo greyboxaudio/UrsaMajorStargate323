@@ -44,10 +44,11 @@ int main()
 
     FILE *fp;
     fp = fopen("Output.txt", "w");
-    fprintf(fp, "colDelay|rowDelay \n");
+    fprintf(fp, "testTap = write | fedBackTap 1-15 | leftTap 1-4| rightTap 1-4 \n");
 
     for (int j = 0; j < 16384; j++)
     {
+        //add static randomization
         if (rateLvl <15)
         {
             rateLvl = rateLvl +1;
@@ -165,7 +166,8 @@ int main()
                 delay = U79[dly_mod_addr];
                 //printf("The delay modulation value at address %i is %i\n", dly_mod_addr, delay);
             }
-
+            
+            //translate rowDelay to binary and shift bits according to the circuit
             if (RASa == 0 && RAS == 1)
             {
                 rowDelay = delayReg + nROW;
@@ -181,13 +183,15 @@ int main()
                 rowDelay = (bit6 * 1) + (LSB * 2) + (bit1 * 4) + (bit2 * 8) + (bit3 * 16) + (bit4 * 32) + (bit5 * 64) + (MSB * 128);
                 //fprintf(fp, "%i|%i|%i ", nROW, delayReg, rowDelay);
             }
+            //calculate colDelay
             if (RAS == 1 && CASa == 0 && CAS == 1)
             {
                 colDelay = delayReg + nCOLUMN;
                 colDelay = colDelay - ((colDelay / 64) * 64);
                 //tapCount = (i - 62) /8;
-                delayTap = (rowDelay + 1) * (colDelay + 1);
-                fprintf(fp, "%i|%i ", rowDelay, colDelay);
+                delayTap = (rowDelay + 1) + (colDelay * 256);
+                fprintf(fp, "%5i ", delayTap);
+                //fprintf(fp, "%i|%i ", rowDelay, colDelay);
             }
         }
         fprintf(fp, "\n");
