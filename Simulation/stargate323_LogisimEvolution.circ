@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project source="3.4.5" version="1.0">
+<project source="3.5.0" version="1.0">
   This file is intended to be loaded by Logisim-evolution (https://github.com/reds-heig/logisim-evolution).
 
   <lib desc="#Wiring" name="0">
     <tool name="Splitter">
       <a name="appear" val="right"/>
-      <a name="facing" val="west"/>
-      <a name="fanout" val="8"/>
-      <a name="incoming" val="8"/>
+      <a name="facing" val="south"/>
+      <a name="fanout" val="6"/>
+      <a name="incoming" val="6"/>
     </tool>
     <tool name="Pin">
       <a name="appearance" val="NewPins"/>
@@ -440,6 +440,7 @@ end TCL_Generic;
       <a name="fanout" val="8"/>
       <a name="incoming" val="8"/>
     </comp>
+    <comp lib="0" loc="(2970,770)" name="Constant"/>
     <comp lib="0" loc="(3070,930)" name="Splitter">
       <a name="appear" val="right"/>
       <a name="facing" val="west"/>
@@ -1626,7 +1627,7 @@ e2
       <a name="labelvisible" val="true"/>
     </comp>
     <comp lib="5" loc="(1810,720)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@23bfc08e"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@1211408f"/>
       <a name="facing" val="east"/>
       <a name="label" val="MOD_CNT"/>
       <a name="labelloc" val="north"/>
@@ -1636,14 +1637,14 @@ e2
       <a name="label" val="RESET"/>
     </comp>
     <comp lib="5" loc="(1940,330)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@ef56552"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@4b20f2aa"/>
       <a name="facing" val="east"/>
       <a name="label" val="PDL"/>
       <a name="labelloc" val="north"/>
       <a name="number" val="4"/>
     </comp>
     <comp lib="5" loc="(2020,360)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@6e0c15b2"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@27969709"/>
       <a name="facing" val="east"/>
       <a name="label" val="PGM"/>
       <a name="labelloc" val="north"/>
@@ -2009,7 +2010,6 @@ e2
     <wire from="(2910,710)" to="(2910,720)"/>
     <wire from="(2910,730)" to="(2910,740)"/>
     <wire from="(2910,750)" to="(3010,750)"/>
-    <wire from="(2910,770)" to="(2950,770)"/>
     <wire from="(2920,1000)" to="(2940,1000)"/>
     <wire from="(2920,870)" to="(2920,880)"/>
     <wire from="(2920,890)" to="(2920,900)"/>
@@ -2021,6 +2021,7 @@ e2
     <wire from="(2930,950)" to="(2930,1040)"/>
     <wire from="(2940,840)" to="(2940,1000)"/>
     <wire from="(2950,770)" to="(2950,1020)"/>
+    <wire from="(2950,770)" to="(2970,770)"/>
     <wire from="(2960,860)" to="(2960,910)"/>
     <wire from="(2960,860)" to="(3050,860)"/>
     <wire from="(2970,1030)" to="(2970,1130)"/>

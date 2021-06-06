@@ -38,9 +38,11 @@ int main()
     int MCCK = 0;
     int MCCKa = 0;
     int tapCount = 0;
-    int delayTap;
+    int delayTap =0;
     int rowDelay = 0;
     int colDelay = 0;
+    int result = 0;
+    int carry = 0;
 
     FILE *fp;
     fp = fopen("Output.txt", "w");
@@ -49,11 +51,11 @@ int main()
     for (int j = 0; j < 16384; j++)
     {
         //add static randomization
-        if (rateLvl <15)
+        if (rateLvl < 15)
         {
-            rateLvl = rateLvl +1;
+            rateLvl = rateLvl + 1;
         }
-        if (rateLvl >15)
+        if (rateLvl > 15)
         {
             rateLvl = 0;
         }
@@ -136,7 +138,7 @@ int main()
             int nROW = writeAddressCount - ((writeAddressCount / 256) * 256);
             int nCOLUMN = writeAddressCount >> 8;
             int multiplex = TCB2 - ((TCB2 / 2) * 2);
-            if (multiplex == 0) //have to check again how the multiplexer is wired up, could be that it's ==1 her and ==0 below
+            if (multiplex == 0)
             {
                 writeAddress = nROW;
             }
@@ -149,6 +151,23 @@ int main()
             {
                 delayReg = delay;
             }
+            //calculate final address
+            result = writeAddress + delayReg;
+            //row carry out latch
+            if (TCB1a == 1 && TCB1 == 0 && RAS == 1)
+            {
+                result = result + carry;
+            }
+            //translate result to binary
+            int LSB = result - ((result / 2) * 2);
+            int bit1 = (result - ((result / 4) * 4)) / 2;
+            int bit2 = (result - ((result / 8) * 8)) / 4;
+            int bit3 = (result - ((result / 16) * 16)) / 8;
+            int bit4 = (result - ((result / 32) * 32)) / 16;
+            int bit5 = (result - ((result / 64) * 64)) / 32;
+            int bit6 = (result - ((result / 128) * 128)) / 64;
+            int MSB = (result - ((result / 256) * 256)) / 128;
+            carry = result / 256;
 
             //alternate between Delay & DelayMod depending on nMOD
             if (nMOD == 1)
@@ -166,29 +185,17 @@ int main()
                 delay = U79[dly_mod_addr];
                 //printf("The delay modulation value at address %i is %i\n", dly_mod_addr, delay);
             }
-            
-            //translate rowDelay to binary and shift bits according to the circuit
+            //calculate rowDelay
             if (RASa == 0 && RAS == 1)
             {
-                rowDelay = delayReg + nROW;
-                int LSB = rowDelay - ((rowDelay / 2) * 2);
-                int bit1 = (rowDelay - ((rowDelay / 4) * 4)) /2;
-                int bit2 = (rowDelay - ((rowDelay / 8) * 8)) /4;
-                int bit3 = (rowDelay - ((rowDelay / 16) * 16)) /8;
-                int bit4 = (rowDelay - ((rowDelay / 32) * 32)) /16;
-                int bit5 = (rowDelay - ((rowDelay / 64) * 64)) /32;
-                int bit6 = (rowDelay - ((rowDelay / 128) * 128)) /64;
-                int MSB = (rowDelay - ((rowDelay / 256) * 256)) /128;
-                int carry = rowDelay / 256;
                 rowDelay = (bit6 * 1) + (LSB * 2) + (bit1 * 4) + (bit2 * 8) + (bit3 * 16) + (bit4 * 32) + (bit5 * 64) + (MSB * 128);
                 //fprintf(fp, "%i|%i|%i ", nROW, delayReg, rowDelay);
             }
             //calculate colDelay
             if (RAS == 1 && CASa == 0 && CAS == 1)
             {
-                colDelay = delayReg + nCOLUMN;
-                colDelay = colDelay - ((colDelay / 64) * 64);
-                //tapCount = (i - 62) /8;
+                colDelay = (LSB) + (bit1 * 2) + (bit2 * 4) + (bit3 * 8) + (bit4 * 16) + (bit5 * 32);
+                tapCount = (i - 62) / 8;
                 delayTap = (rowDelay + 1) + (colDelay * 256);
                 fprintf(fp, "%5i ", delayTap);
                 //fprintf(fp, "%i|%i ", rowDelay, colDelay);
