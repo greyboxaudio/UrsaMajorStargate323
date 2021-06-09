@@ -70,7 +70,6 @@ int main()
     __uint8_t gainCompare = 0;
     __uint8_t nSelectA = 0;
     __uint8_t gain = 254;
-
     __uint16_t gainModContBaseAddr = 0;
     __uint16_t gainModBaseAddr = 0;
     __uint16_t gainBaseAddr = 0;
@@ -78,8 +77,6 @@ int main()
     __uint16_t delayBaseAddr = 0;
 
     int t = 16384; //machine frames for testing
-    int testArray[t];
-    int lastTap = 0;
 
     FILE *fp;
     fp = fopen("Output.txt", "w");
@@ -114,9 +111,8 @@ int main()
             TCB3 = i >> 3;
             TCB7a = TCB7;
             TCB7 = i >> 7;
-            //printf("Bit Time = %i\n", i);
 
-            //read out timing PROMs & exctract individual signals
+            //read out timing PROMs & extract individual signals
             timingA = U47[i];
             timingB = U46[i];
             nSyncClear = timingA << 7;
@@ -174,7 +170,6 @@ int main()
             }
 
             //gain
-
             if (_DAC == 1)
             {
                 gainModContAddress = TCB3 | gainModContBaseAddr;
@@ -197,7 +192,9 @@ int main()
                 gainOut = U78[gainAddress];
                 gainOut = gainOut << 1;
             }
+
             gainModEnable = 1 - (nGainModEnable & 1);
+
             if (gainModOut < gainOut)
             {
                 gainCompare = 1;
@@ -206,7 +203,9 @@ int main()
             {
                 gainCompare = 0;
             }
+
             nSelectA = 1 - (gainModEnable & gainCompare);
+
             if (nSelectA == 1)
             {
                 gain = gainOut;
@@ -282,22 +281,7 @@ int main()
                 tapCount = tapCount + 1;
                 delayTap = (rowDelay) + (colDelay * 256);
                 fprintf(fp, "%5i|%-3i ", delayTap, gain);
-
-                //code to calculate the predelay of the output taps
-                /*if (tapCount == 1)
-                {
-                    testArray[j] = delayTap;
-                }
-                if (tapCount == 20 && j == 0)
-                {
-                    lastTap = delayTap;
-                }*/
             }
-            //debug code
-            /*if (i >= 67 && i <=77)
-            {
-            fprintf(fp, "%3i|%-2i %3i|%3i|%3i %3i| %3i| %3i | %3i | %3i|%3i|%3i \n", i, nMOD, delayReg, U79[dly_mod_addr], U69[dly_addr],  MCCK, nROW, nCOLUMN, result, gain, gainModOut, gainOut );
-            }*/
         }
         if (j < t - 1)
         {
@@ -305,16 +289,5 @@ int main()
         }
     }
     fclose(fp);
-
-    //calculate distance between output tap & write cycle
-    /*for (int k = 0; k < t; k++)
-    {
-        if (testArray[k] == lastTap)
-        {
-            float pdTime = ((t - k) * 31.25) / 1000;
-            //printf("k = %i | dram value = %i | lastTap = %i | predelay = %.2f ms\n", k, testArray[k], lastTap, pdTime);
-        }
-    }*/
-
     return 0;
 }
