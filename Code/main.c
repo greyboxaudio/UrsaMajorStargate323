@@ -23,7 +23,7 @@ int main()
     __uint8_t TCB7 = 0;
     __uint8_t TCB7a = 0;
     __uint8_t TCB2 = 0;
-    __uint8_t TCB3 =0;
+    __uint8_t TCB3 = 0;
     __uint8_t nMOD = 0;
     __uint8_t RAS = 0;
     __uint8_t RASa = 0;
@@ -46,7 +46,7 @@ int main()
     __uint8_t writeAddress = 0;
     __uint8_t preDelay_low = 0;
     __uint8_t preDelay_high = 0;
-    __uint8_t delayModCount =0;
+    __uint8_t delayModCount = 0;
     __uint16_t dly_addr = 0;
     __uint16_t dly_mod_addr = 0;
     __uint8_t delay = 0;
@@ -71,14 +71,13 @@ int main()
     __uint8_t nSelectA = 0;
     __uint8_t gain = 254;
 
-__uint16_t gainModContBaseAddr =0;
-__uint16_t gainModBaseAddr =0;
-__uint16_t gainBaseAddr =0;
-__uint16_t delayModBaseAddr =0;
-__uint16_t delayBaseAddr =0;
+    __uint16_t gainModContBaseAddr = 0;
+    __uint16_t gainModBaseAddr = 0;
+    __uint16_t gainBaseAddr = 0;
+    __uint16_t delayModBaseAddr = 0;
+    __uint16_t delayBaseAddr = 0;
 
-
-    int t = 16384;           //machine frames for testing
+    int t = 16384; //machine frames for testing
     int testArray[t];
     int lastTap = 0;
 
@@ -100,13 +99,13 @@ __uint16_t delayBaseAddr =0;
         {
             if (i == 0)
             {
-                gainBaseAddr =(decayTime << 5) | (program << 8);
+                gainBaseAddr = (decayTime << 5) | (program << 8);
                 preDelay_high = preDelay >> 3;
                 preDelay_low = preDelay << 5;
                 preDelay_low = preDelay_low >> 5;
-                delayBaseAddr =(preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+                delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
             }
-            
+
             //set up timing signals & counters
             TCB1a = TCB1;
             TCB1 = i << 6;
@@ -144,9 +143,9 @@ __uint16_t delayBaseAddr =0;
             }
             if (TCB7a == 0 && TCB7 == 1 && modCarry == 1)
             {
-                            modClockIn = U71[modRateCount];
-            modClockIn = modClockIn << 4;
-            modClockIn = modClockIn >> 4;
+                modClockIn = U71[modRateCount];
+                modClockIn = modClockIn << 4;
+                modClockIn = modClockIn >> 4;
                 modClockOut = modClockIn;
             }
             modCarry = modClockOut >> 4;
@@ -166,32 +165,35 @@ __uint16_t delayBaseAddr =0;
                 {
                     modCount = 0;
                 }
-                
+
                 gainModContBaseAddr = (modCount >> 6) << 5;
                 gainModBaseAddr = modCount << 7;
                 gainModBaseAddr = gainModBaseAddr >> 4;
-            delayModCount = modCount >> 6;
-            delayModBaseAddr = delayModCount << 5;
+                delayModCount = modCount >> 6;
+                delayModBaseAddr = delayModCount << 5;
             }
 
             //gain
-            gainModContAddress = TCB3 | gainModContBaseAddr;
+
             if (_DAC == 1)
             {
+                gainModContAddress = TCB3 | gainModContBaseAddr;
                 gainModContOut = U76[gainModContAddress];
                 nGainModEnable = gainModContOut << 4;
                 nGainModEnable = nGainModEnable >> 7;
                 gainModContOut = gainModContOut << 5;
                 gainModContOut = gainModContOut >> 5;
             }
-            gainModAddress = gainModContOut | gainModBaseAddr;
+
             if (nGainModEnable == 0)
             {
+                gainModAddress = gainModContOut | gainModBaseAddr;
                 gainModOut = U77[gainModAddress];
             }
-            gainAddress = TCB3 | gainBaseAddr;
+
             if (nDACX == 0)
             {
+                gainAddress = TCB3 | gainBaseAddr;
                 gainOut = U78[gainAddress];
                 gainOut = gainOut << 1;
             }
@@ -222,8 +224,8 @@ __uint16_t delayBaseAddr =0;
                 {
                     writeAddressCount = 0;
                 }
-            nROW = writeAddressCount;
-            nCOLUMN = writeAddressCount >> 8;
+                nROW = writeAddressCount;
+                nCOLUMN = writeAddressCount >> 8;
             }
 
             // calculate & multiplex row/column
@@ -305,14 +307,14 @@ __uint16_t delayBaseAddr =0;
     fclose(fp);
 
     //calculate distance between output tap & write cycle
-    for (int k = 0; k < t; k++)
+    /*for (int k = 0; k < t; k++)
     {
         if (testArray[k] == lastTap)
         {
             float pdTime = ((t - k) * 31.25) / 1000;
             //printf("k = %i | dram value = %i | lastTap = %i | predelay = %.2f ms\n", k, testArray[k], lastTap, pdTime);
         }
-    }
+    }*/
 
     return 0;
 }
