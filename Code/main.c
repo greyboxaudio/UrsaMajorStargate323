@@ -37,7 +37,6 @@ int main()
     __uint8_t modClockOut = 0;
     __uint8_t modCarry = 0;
     __uint8_t MCCK = 0;
-    __uint8_t MCCKa = 0;
     __uint16_t modCount = 0;
     __uint16_t writeAddressCount = 0;
     __uint8_t nROW = 0;
@@ -55,7 +54,7 @@ int main()
     __uint8_t bit6 = 0;
     __uint8_t MSB = 0;
     __uint8_t delayCarryOut = 0;
-    __uint8_t delayCarryIn =0;
+    __uint8_t delayCarryIn = 0;
     __uint8_t rowDelay = 0;
     __uint8_t colDelay = 0;
     __uint8_t tapCount = 0;
@@ -77,8 +76,8 @@ int main()
     __uint16_t delayModBaseAddr = 0;
     __uint16_t delayBaseAddr = 0;
 
-    __uint8_t resultRow =0;
-    __uint8_t resultCol =0;
+    __uint8_t resultRow = 0;
+    __uint8_t resultCol = 0;
 
     int t = 16384; //machine frames for testing
 
@@ -105,8 +104,9 @@ int main()
                 preDelay_low = preDelay << 5;
                 preDelay_low = preDelay_low >> 5;
                 delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+                fprintf(fp, "%5i / ", j);
             }
-            /*if (j==18)
+            /*if (j==597)
             {
                 resultRow = result << 2;
                 resultRow = (resultRow >> 1) | bit6 | (MSB << 7);
@@ -115,6 +115,8 @@ int main()
                 int nTCB1 = 1-TCB1;
                 //fprintf(fp, "%4i   %3i|%i %3i|%i %4i|%i %i \n",i,resultRow,RAS,resultCol,CAS,result,delayCarryIn,nTCB1);
             }*/
+            //fprintf(fp, " %i|%i|%i|%i ",i,modCount,modClockOut,MCCK);
+
             //calculate rowDelay
             if (RASa == 0 && RAS == 1)
             {
@@ -128,9 +130,9 @@ int main()
                 colDelay = colDelay >> 2;
                 tapCount = tapCount + 1;
                 delayTap = (rowDelay) + (colDelay * 256);
-                fprintf(fp, "%3i|%-3i ",colDelay, gain);
+                fprintf(fp, "%2i|%3i|%-5i ",tapCount, gain,delayTap);
             }
-            
+
             //set up timing signals & counters
             TCB1a = TCB1;
             TCB1 = i << 6;
@@ -164,7 +166,6 @@ int main()
             if (TCB7a == 0 && TCB7 == 1)
             {
                 modClockOut = modClockOut + 1;
-                modCarry = modClockOut >> 4;
                 if (modClockOut == 16)
                 {
                     modClockIn = U71[modRateCount];
@@ -172,17 +173,15 @@ int main()
                     modClockIn = modClockIn >> 4;
                     modClockOut = modClockIn;
                 }
+                modCarry = (modClockOut + 1) >> 4;
             }
-
             //mod counter clock
-            MCCKa = MCCK;
             if (TCB7a == 1 && TCB7 == 0)
             {
                 MCCK = modCarry;
             }
-
             //mod counter
-            if (MCCKa == 1 && MCCK == 0)
+            if (TCB7a == 1 && TCB7 == 0 && MCCK == 1)
             {
                 modCount = modCount + 1;
                 if (modCount > 8191)
