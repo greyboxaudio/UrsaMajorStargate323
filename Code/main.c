@@ -50,9 +50,6 @@ int main()
     __uint8_t gainModOut = 0;
     __uint8_t gainModContOut = 0;
     __uint8_t nGainModEnable = 1;
-    __uint8_t gainModEnable = 0;
-    __uint8_t gainCompare = 0;
-    __uint8_t nSelectA = 0;
     __uint16_t delayModBaseAddr = 0;
     __uint16_t dly_mod_addr = 0;
 
