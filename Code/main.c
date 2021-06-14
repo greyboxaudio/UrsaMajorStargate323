@@ -15,10 +15,10 @@ int main()
     __uint8_t preDelay = 15; // predelay from low to high (3,2,0,1,5,4,6,7,11,10,8,9,13,12,14,15)
     __uint8_t decayTime = 7; // decay times from low to high (3,2,0,1,5,4,6,7)
     __uint8_t rateLvl = 0;   // 0-15 for testing
-    int t = 16384; //machine frames for testing
+    int t = 16384;           //machine frames for testing
 
     __uint16_t dram[16384];
-     __uint16_t delayTaps[24];
+    __uint16_t delayTaps[24];
     __uint8_t gainCeiling[24];
     __uint16_t gainBaseAddr = 0;
     __uint16_t gainAddress = 0;
@@ -69,167 +69,147 @@ int main()
         {
             rateLvl = 0;
         }*/
-        for (int i = 0; i < 4; i++)
+
+        //calculate base address factors
+        gainBaseAddr = (decayTime << 5) | (program << 8);
+        preDelay_high = preDelay >> 3;
+        preDelay_low = preDelay << 5;
+        preDelay_low = preDelay_low >> 5;
+        delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+
+        //calculate write tap (=test tap)
+        //calculate address row
+        result = nROW;
+        bit6 = result << 1;
+        bit6 = bit6 >> 7;
+        MSB = result;
+        MSB = MSB >> 7;
+        delayCarryOut = result >> 8;
+        rowDelay = result << 2;
+        rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+        //calculate address column
+        result = nCOLUMN + delayCarryOut;
+        colDelay = result << 2;
+        colDelay = colDelay >> 2;
+        //store address
+        delayTaps[0] = (rowDelay) + (colDelay * 256);
+        //calculate gain value
+        gainAddress = gainBaseAddr + 7;
+        gainOut = U78[gainAddress];
+        //store gain value
+        gainCeiling[0] = gainOut << 1; //only needed for testing purposes
+
+        //calculate feedback taps
+        for (int d = 0; d < 15; d++)
         {
-            if (i == 0)
+            dly_mod_addr = delayModBaseAddr + 7 + d;
+            result = U79[dly_mod_addr] + nROW;
+            bit6 = result << 1;
+            bit6 = bit6 >> 7;
+            MSB = result;
+            MSB = MSB >> 7;
+            delayCarryOut = result >> 8;
+            rowDelay = result << 2;
+            rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+
+            dly_addr = delayBaseAddr + 16 + d * 2;
+            result = U69[dly_addr] + nCOLUMN + delayCarryOut;
+            colDelay = result << 2;
+            colDelay = colDelay >> 2;
+
+            delayTaps[1 + d] = (rowDelay) + (colDelay * 256);
+
+            gainModContAddress = gainModContBaseAddr + 8 + d;
+            gainModContOut = U76[gainModContAddress];
+            nGainModEnable = gainModContOut << 4;
+            nGainModEnable = nGainModEnable >> 7;
+            gainModContOut = gainModContOut << 5;
+            gainModContOut = gainModContOut >> 5;
+
+            gainModAddress = gainModContOut | gainModBaseAddr;
+            gainModOut = U77[gainModAddress];
+
+            gainAddress = gainBaseAddr + 8 + d;
+            gainOut = U78[gainAddress];
+            gainOut = gainOut << 1;
+
+            if (gainModOut < gainOut && nGainModEnable == 0)
             {
-                gainBaseAddr = (decayTime << 5) | (program << 8);
-                preDelay_high = preDelay >> 3;
-                preDelay_low = preDelay << 5;
-                preDelay_low = preDelay_low >> 5;
-                delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+                gainCeiling[1 + d] = gainModOut;
             }
-            if (i == 1)
-            {   //calculate write tap (=test tap)
-                //calculate address row
-                result = nROW;
-                bit6 = result << 1;
-                bit6 = bit6 >> 7;
-                MSB = result;
-                MSB = MSB >> 7;
-                delayCarryOut = result >> 8;
-                rowDelay = result << 2;
-                rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-                //calculate address column
-                result = nCOLUMN + delayCarryOut;
-                colDelay = result << 2;
-                colDelay = colDelay >> 2;
-                //store address
-                delayTaps[0] = (rowDelay) + (colDelay * 256);
-                //calculate gain value
-                gainAddress = gainBaseAddr + 7;
-                gainOut = U78[gainAddress];
-                //store gain value
-                gainCeiling[0] = gainOut << 1; //only needed for testing purposes
-
-                //calculate feedback taps
-                for (int d = 0; d < 15; d++)
-                {
-                    dly_mod_addr = delayModBaseAddr + 7 + d;
-                    result = U79[dly_mod_addr] + nROW;
-                    bit6 = result << 1;
-                    bit6 = bit6 >> 7;
-                    MSB = result;
-                    MSB = MSB >> 7;
-                    delayCarryOut = result >> 8;
-                    rowDelay = result << 2;
-                    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-
-                    dly_addr = delayBaseAddr + 16 + d * 2;
-                    result = U69[dly_addr] + nCOLUMN + delayCarryOut;
-                    colDelay = result << 2;
-                    colDelay = colDelay >> 2;
-
-                    delayTaps[1 + d] = (rowDelay) + (colDelay * 256);
-                    
-                    gainModContAddress = gainModContBaseAddr + 8 +d;
-                    gainModContOut = U76[gainModContAddress];
-                    nGainModEnable = gainModContOut << 4;
-                    nGainModEnable = nGainModEnable >> 7;
-                    gainModContOut = gainModContOut << 5;
-                    gainModContOut = gainModContOut >> 5;
-
-                    gainModAddress = gainModContOut | gainModBaseAddr;
-                    gainModOut = U77[gainModAddress];
-
-                    gainAddress = gainBaseAddr + 8 + d;
-                    gainOut = U78[gainAddress];
-                    gainOut = gainOut << 1;
-
-                    gainModEnable = 1 - (nGainModEnable & 1);
-
-                    if (gainModOut < gainOut)
-                    {
-                        gainCompare = 1;
-                    }
-                    if (gainModOut >= gainOut)
-                    {
-                        gainCompare = 0;
-                    }
-
-                    nSelectA = 1 - (gainModEnable & gainCompare);
-
-                    if (nSelectA == 1)
-                    {
-                        gainCeiling[1 + d] = gainOut;
-                    }
-                    if (nSelectA == 0)
-                    {
-                        gainCeiling[1 + d] = gainModOut;
-                    }
-                }
-                for (int d = 0; d < 8; d++)
-                {
-                    dly_addr = delayBaseAddr + 45 + d * 2;
-                    result = U69[dly_addr] + nROW;
-                    bit6 = result << 1;
-                    bit6 = bit6 >> 7;
-                    MSB = result;
-                    MSB = MSB >> 7;
-                    delayCarryOut = result >> 8;
-                    rowDelay = result << 2;
-                    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-
-                    dly_addr = delayBaseAddr + 46 + d * 2;
-                    result = U69[dly_addr] + nCOLUMN + delayCarryOut;
-                    colDelay = result << 2;
-                    colDelay = colDelay >> 2;
-
-                    delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
-
-                    gainAddress = gainBaseAddr + 23 + d;
-                    gainOut = U78[gainAddress];
-
-                    gainCeiling[16 + d] = gainOut << 1;
-                }
-                fprintf(fp, "%5i / ", j);
-                for (int k = 0; k < 24; k++)
-                {
-                    fprintf(fp, "%2i|%3i|%-5i ", k+1, gainCeiling[k], delayTaps[k]);
-                }
-            }
-
-            //mod rate counter
-            if (i == 2)
+            else
             {
-                modClockOut = modClockOut + 1;
-                if (modClockOut == 16)
-                {
-                    modRateCount = rateLvl | (program << 4);
-                    modClockIn = U71[modRateCount];
-                    modClockIn = modClockIn << 4;
-                    modClockIn = modClockIn >> 4;
-                    modClockOut = modClockIn;
-                }
-                modCarry = (modClockOut + 1) >> 4;
+                gainCeiling[1 + d] = gainOut;
             }
+        }
 
-            //increment write address & wraparound if >16bit
-            if (i == 3)
+        //calculate output taps
+        for (int d = 0; d < 8; d++)
+        {
+            dly_addr = delayBaseAddr + 45 + d * 2;
+            result = U69[dly_addr] + nROW;
+            bit6 = result << 1;
+            bit6 = bit6 >> 7;
+            MSB = result;
+            MSB = MSB >> 7;
+            delayCarryOut = result >> 8;
+            rowDelay = result << 2;
+            rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+
+            dly_addr = delayBaseAddr + 46 + d * 2;
+            result = U69[dly_addr] + nCOLUMN + delayCarryOut;
+            colDelay = result << 2;
+            colDelay = colDelay >> 2;
+
+            delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
+
+            gainAddress = gainBaseAddr + 23 + d;
+            gainOut = U78[gainAddress];
+
+            gainCeiling[16 + d] = gainOut << 1;
+        }
+
+        //mod rate counter
+        modClockOut = modClockOut + 1;
+        if (modClockOut == 16)
+        {
+            modRateCount = rateLvl | (program << 4);
+            modClockIn = U71[modRateCount];
+            modClockIn = modClockIn << 4;
+            modClockIn = modClockIn >> 4;
+            modClockOut = modClockIn;
+        }
+        modCarry = (modClockOut + 1) >> 4;
+
+        //increment write address & wraparound if >16bit
+        writeAddressCount = writeAddressCount + 1;
+        if (writeAddressCount > 16383)
+        {
+            writeAddressCount = 0;
+        }
+        nROW = writeAddressCount;
+        nCOLUMN = writeAddressCount >> 8;
+        MCCK = modCarry;
+        if (MCCK == 1)
+        {
+            modCount = modCount + 1;
+            if (modCount > 8191)
             {
-                writeAddressCount = writeAddressCount + 1;
-                if (writeAddressCount > 16383)
-                {
-                    writeAddressCount = 0;
-                }
-                nROW = writeAddressCount;
-                nCOLUMN = writeAddressCount >> 8;
-                MCCK = modCarry;
-                if (MCCK == 1)
-                {
-                    modCount = modCount + 1;
-                    if (modCount > 8191)
-                    {
-                        modCount = 0;
-                    }
-
-                    gainModContBaseAddr = (modCount >> 6) << 5;
-                    gainModBaseAddr = modCount << 7;
-                    gainModBaseAddr = gainModBaseAddr >> 4;
-                    delayModCount = modCount >> 6;
-                    delayModBaseAddr = delayModCount << 5;
-                }
+                modCount = 0;
             }
+
+            gainModContBaseAddr = (modCount >> 6) << 5;
+            gainModBaseAddr = modCount << 7;
+            gainModBaseAddr = gainModBaseAddr >> 4;
+            delayModCount = modCount >> 6;
+            delayModBaseAddr = delayModCount << 5;
+        }
+
+        //print out debug data
+        fprintf(fp, "%5i / ", j);
+        for (int k = 0; k < 24; k++)
+        {
+            fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
         }
         if (j < t - 1)
         {
