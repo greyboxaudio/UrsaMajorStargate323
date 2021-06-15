@@ -29,9 +29,9 @@ int main()
     __uint8_t delayCarryOut = 0;
     __uint8_t rowDelay = 0;
     __uint8_t colDelay = 0;
-    __uint16_t writeAddressCount = 0;
-    __uint8_t nROW = 0;
-    __uint8_t nCOLUMN = 0;
+    __uint16_t writeAddressCount = 16383;
+    __uint8_t nROW = 255;
+    __uint8_t nCOLUMN = 255;
     __uint8_t modRateCount = 0;
     __uint8_t modClockOut = 0;
     __uint8_t modCarry = 0;
@@ -172,10 +172,10 @@ int main()
         modCarry = (modClockOut + 1) >> 4;
 
         //increment write address & wraparound if >16bit
-        writeAddressCount = writeAddressCount + 1;
-        if (writeAddressCount > 16383)
+        writeAddressCount = writeAddressCount -1;
+        if (writeAddressCount < 0)
         {
-            writeAddressCount = 0;
+            writeAddressCount = 16383;
         }
         nROW = writeAddressCount;
         nCOLUMN = writeAddressCount >> 8;
