@@ -27,3 +27,6 @@ Back when TDM was a thing, an SST-282 Plugin was available from Eventide https:/
 I'd be more than happy to see an official continuation of the Ursa Major product line, but it doesn't look like this is going to happen anytime soon (if ever).
 
 My goal is to preserve as much information about the Stargate 323 reverb, without causing damage to Chris Moore and the Ursa Major brand. I'm trying to navigate this thin line as good as I possibly can and if anybody has any suggestions, feel free to reach out.
+
+Update: I've uploaded a first prototype to the Reaktor User Library
+https://www.native-instruments.com/de/reaktor-community/reaktor-user-library/entry/show/14155/
