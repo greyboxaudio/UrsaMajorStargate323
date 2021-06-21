@@ -29,6 +29,9 @@
     </tool>
   </lib>
   <lib desc="#Gates" name="1">
+    <tool name="NOT Gate">
+      <a name="width" val="8"/>
+    </tool>
     <tool name="PLA">
       <a name="table" val=""/>
     </tool>
@@ -552,17 +555,6 @@ end TCL_Generic;
     <comp lib="0" loc="(2270,2870)" name="Constant">
       <a name="value" val="0x0"/>
     </comp>
-    <comp lib="0" loc="(2300,2940)" name="Tunnel">
-      <a name="facing" val="east"/>
-      <a name="label" val="BITTIME"/>
-      <a name="width" val="8"/>
-    </comp>
-    <comp lib="0" loc="(2320,2940)" name="Probe">
-      <a name="appearance" val="NewPins"/>
-      <a name="facing" val="west"/>
-      <a name="labelloc" val="east"/>
-      <a name="radix" val="10unsigned"/>
-    </comp>
     <comp lib="0" loc="(2340,2520)" name="Constant"/>
     <comp lib="0" loc="(2400,2520)" name="Constant"/>
     <comp lib="0" loc="(2400,2940)" name="Probe">
@@ -769,6 +761,17 @@ end TCL_Generic;
       <a name="fanout" val="4"/>
       <a name="incoming" val="4"/>
     </comp>
+    <comp lib="0" loc="(3250,840)" name="Tunnel">
+      <a name="facing" val="east"/>
+      <a name="label" val="BITTIME"/>
+      <a name="width" val="8"/>
+    </comp>
+    <comp lib="0" loc="(3270,840)" name="Probe">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="labelloc" val="east"/>
+      <a name="radix" val="10unsigned"/>
+    </comp>
     <comp lib="0" loc="(3320,920)" name="Splitter">
       <a name="appear" val="right"/>
       <a name="facing" val="west"/>
@@ -811,6 +814,12 @@ end TCL_Generic;
     <comp lib="1" loc="(1900,1990)" name="NOT Gate"/>
     <comp lib="1" loc="(2080,2270)" name="NAND Gate">
       <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(2290,1890)" name="NOT Gate">
+      <a name="width" val="8"/>
+    </comp>
+    <comp lib="1" loc="(2290,1910)" name="NOT Gate">
+      <a name="width" val="8"/>
     </comp>
     <comp lib="1" loc="(2290,2470)" name="NAND Gate">
       <a name="size" val="30"/>
@@ -2995,12 +3004,12 @@ e2
       <a name="labelvisible" val="true"/>
     </comp>
     <comp lib="5" loc="(1180,2680)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@7953cfbe"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@5ae406e0"/>
       <a name="facing" val="east"/>
       <a name="number" val="3"/>
     </comp>
     <comp lib="5" loc="(1670,1130)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@68c92b54"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@5244e237"/>
       <a name="facing" val="east"/>
       <a name="number" val="4"/>
     </comp>
@@ -3008,21 +3017,21 @@ e2
       <a name="label" val="RESET"/>
     </comp>
     <comp lib="5" loc="(1930,330)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@29598f60"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@41d9bb4c"/>
       <a name="facing" val="east"/>
       <a name="label" val="PDL"/>
       <a name="labelloc" val="north"/>
       <a name="number" val="4"/>
     </comp>
     <comp lib="5" loc="(1990,360)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@a1fbe35"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@1dc15740"/>
       <a name="facing" val="east"/>
       <a name="label" val="PGM"/>
       <a name="labelloc" val="north"/>
       <a name="number" val="3"/>
     </comp>
     <comp lib="5" loc="(3060,1190)" name="DipSwitch">
-      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@6dd6bef7"/>
+      <a name="Dummy" val="com.cburch.logisim.fpga.data.ComponentMapInformationContainer@6768811e"/>
       <a name="facing" val="east"/>
       <a name="labelloc" val="south"/>
       <a name="number" val="2"/>
@@ -3562,7 +3571,7 @@ e2
     <wire from="(2170,2960)" to="(2180,2960)"/>
     <wire from="(2170,3000)" to="(2180,3000)"/>
     <wire from="(2180,1890)" to="(2180,1950)"/>
-    <wire from="(2180,1890)" to="(2350,1890)"/>
+    <wire from="(2180,1890)" to="(2260,1890)"/>
     <wire from="(2180,1950)" to="(2180,2020)"/>
     <wire from="(2180,1950)" to="(2910,1950)"/>
     <wire from="(2180,2020)" to="(2200,2020)"/>
@@ -3570,7 +3579,7 @@ e2
     <wire from="(2190,1600)" to="(2240,1600)"/>
     <wire from="(2190,1790)" to="(2190,1910)"/>
     <wire from="(2190,1790)" to="(2980,1790)"/>
-    <wire from="(2190,1910)" to="(2350,1910)"/>
+    <wire from="(2190,1910)" to="(2260,1910)"/>
     <wire from="(2230,2410)" to="(2230,2460)"/>
     <wire from="(2230,2410)" to="(2390,2410)"/>
     <wire from="(2230,2460)" to="(2230,2480)"/>
@@ -3588,13 +3597,14 @@ e2
     <wire from="(2280,2570)" to="(2430,2570)"/>
     <wire from="(2280,2660)" to="(2280,2710)"/>
     <wire from="(2280,2710)" to="(2500,2710)"/>
+    <wire from="(2290,1890)" to="(2350,1890)"/>
+    <wire from="(2290,1910)" to="(2350,1910)"/>
     <wire from="(2290,2470)" to="(2290,2540)"/>
     <wire from="(2290,2540)" to="(2380,2540)"/>
     <wire from="(2290,2800)" to="(2290,2810)"/>
     <wire from="(2290,2800)" to="(2490,2800)"/>
     <wire from="(2290,2870)" to="(2290,2910)"/>
     <wire from="(2290,2910)" to="(2430,2910)"/>
-    <wire from="(2300,2940)" to="(2320,2940)"/>
     <wire from="(2300,720)" to="(2370,720)"/>
     <wire from="(2310,510)" to="(2310,620)"/>
     <wire from="(2310,510)" to="(3070,510)"/>
@@ -3896,6 +3906,7 @@ e2
     <wire from="(3210,1400)" to="(3210,1430)"/>
     <wire from="(3210,1400)" to="(3230,1400)"/>
     <wire from="(3250,1360)" to="(3520,1360)"/>
+    <wire from="(3250,840)" to="(3270,840)"/>
     <wire from="(3260,1470)" to="(3270,1470)"/>
     <wire from="(3270,1350)" to="(3270,1470)"/>
     <wire from="(3270,1470)" to="(3280,1470)"/>
