@@ -29,7 +29,7 @@ int main()
     __uint8_t delayCarryOut = 0;
     __uint8_t rowDelay = 0;
     __uint8_t colDelay = 0;
-    __uint16_t writeAddressCount = 16383;
+    __int16_t writeAddressCount = 16383;
     __uint8_t nROW = 255;
     __uint8_t nCOLUMN = 255;
     __uint8_t modRateCount = 0;
