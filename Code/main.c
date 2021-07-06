@@ -12,8 +12,10 @@ int main()
     __uint8_t program = 7;   // program from low to high (3,2,0,1,5,4,6,7)
     __uint8_t preDelay = 15; // predelay from low to high (3,2,0,1,5,4,6,7,11,10,8,9,13,12,14,15)
     __uint8_t decayTime = 7; // decay times from low to high (3,2,0,1,5,4,6,7)
-    __uint8_t rateLvl = 0;   // 0-15 for testing
+    __uint8_t rateLvl = 0;   // 0,1,3,7,15 RNG for testing
     __uint16_t dram[16384];
+    float delayTime[25];
+    float gain[24];
     __uint16_t delayTaps[24];
     __uint8_t gainCeiling[24];
     __uint16_t gainBaseAddr = 0;
@@ -50,19 +52,51 @@ int main()
 
     int t = 16384; //machine frames for testing
     FILE *fp;
-    fp = fopen("Output_NoMod.txt", "w");
+    fp = fopen("Output_NoRNG.txt", "w");
+
+    //store write address sequence for debugging
+    for (int j = 0; j < 16384; j++)
+    {
+        //calculate write address
+        //calculate address row
+        result = nROW;
+        bit6 = result << 1;
+        bit6 = bit6 >> 7;
+        MSB = result;
+        MSB = MSB >> 7;
+        delayCarryOut = result >> 8;
+        rowDelay = result << 2;
+        rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+        //calculate address column
+        result = nCOLUMN + delayCarryOut;
+        colDelay = result << 2;
+        colDelay = colDelay >> 2;
+        //store address
+        dram[j] = (rowDelay) + (colDelay * 256);
+
+        //advance write address & wraparound if < 0
+        writeAddressCount = writeAddressCount - 1;
+        if (writeAddressCount < 0)
+        {
+            writeAddressCount = 16383;
+        }
+        nROW = writeAddressCount;
+        nCOLUMN = writeAddressCount >> 8;
+    }
+    // reset variables
+    result = 0;
+    bit6 = 0;
+    MSB = 0;
+    delayCarryOut = 0;
+    rowDelay = 0;
+    colDelay = 0;
+    writeAddressCount = 16383;
+    nROW = 255;
+    nCOLUMN = 255;
+
+    //main loop
     for (int j = 0; j < t; j++)
     {
-        //add static randomization
-        /*if (rateLvl < 16)
-        {
-            rateLvl = rateLvl + 1;
-        }
-        if (rateLvl > 15)
-        {
-            rateLvl = 0;
-        }*/
-
         //calculate base address factors
         gainBaseAddr = (decayTime << 5) | (program << 8);
         preDelay_high = preDelay >> 3;
@@ -100,7 +134,7 @@ int main()
         for (int d = 0; d < 15; d++)
         {
 
-            result = U79[dly_mod_addr +d] + nROW;
+            result = U79[dly_mod_addr + d] + nROW;
             bit6 = result << 1;
             bit6 = bit6 >> 7;
             MSB = result;
@@ -109,13 +143,13 @@ int main()
             rowDelay = result << 2;
             rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
 
-            result = U69[dly_addr +d*2] + nCOLUMN + delayCarryOut;
+            result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
             colDelay = result << 2;
             colDelay = colDelay >> 2;
 
             delayTaps[1 + d] = (rowDelay) + (colDelay * 256);
 
-            gainModContOut = U76[gainModContAddress +d];
+            gainModContOut = U76[gainModContAddress + d];
             nGainModEnable = gainModContOut >> 3;
             gainModContOut = gainModContOut << 5;
             gainModContOut = gainModContOut >> 5;
@@ -123,7 +157,7 @@ int main()
             gainModAddress = gainModContOut | gainModBaseAddr;
             gainModOut = U77[gainModAddress];
 
-            gainOut = U78[gainAddress +d];
+            gainOut = U78[gainAddress + d];
             gainOut = gainOut;
 
             if (gainModOut < gainOut && nGainModEnable == 0)
@@ -142,7 +176,7 @@ int main()
         dly_addr = delayBaseAddr + 46;
         for (int d = 0; d < 8; d++)
         {
-            result = U69[dly_mod_addr +d*2] + nROW;
+            result = U69[dly_mod_addr + d * 2] + nROW;
             bit6 = result << 1;
             bit6 = bit6 >> 7;
             MSB = result;
@@ -151,13 +185,13 @@ int main()
             rowDelay = result << 2;
             rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
 
-            result = U69[dly_addr +d*2] + nCOLUMN + delayCarryOut;
+            result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
             colDelay = result << 2;
             colDelay = colDelay >> 2;
 
             delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
 
-            gainOut = U78[gainAddress +d];
+            gainOut = U78[gainAddress + d];
 
             gainCeiling[16 + d] = gainOut;
         }
@@ -171,8 +205,8 @@ int main()
         }
         modCarry = (modClockOut + 1) >> 4;
 
-        //increment write address & wraparound if >16bit
-        writeAddressCount = writeAddressCount -1;
+        //advance write address & wraparound if < 0
+        writeAddressCount = writeAddressCount - 1;
         if (writeAddressCount < 0)
         {
             writeAddressCount = 16383;
@@ -199,7 +233,28 @@ int main()
         fprintf(fp, "%5i / ", j);
         for (int k = 0; k < 24; k++)
         {
-            fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+            for (int l = 0; l < 16384; l++)
+            {
+                if (k == 0 && delayTaps[k] == dram[l])
+                {
+                    delayTime[24] = l;
+                    delayTime[k] = l - delayTime[24];
+                }
+                if (k > 0 && delayTaps[k] == dram[l])
+                {
+                    if (delayTime[24] >= l)
+                    {
+                        delayTime[k] = ((delayTime[24] - l) * 31.25) / 1000;
+                    }
+                    else
+                    {
+                        delayTime[k] = 512.0 + (((delayTime[24] - l) * 31.25) / 1000);
+                    }
+                }
+            }
+            gain[k] = (gainCeiling[k] / 256.0);
+            fprintf(fp, "%2i|%.2f|%.3f  ", k + 1, delayTime[k], gain[k]);
+            //fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
         }
         if (j < t - 1)
         {
