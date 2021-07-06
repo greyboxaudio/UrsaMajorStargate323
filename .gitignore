@@ -2,3 +2,6 @@
 Simulation/stargate_323_ltspice.log
 Simulation/stargate_323_ltspice.op.raw
 Simulation/stargate_323_ltspice.raw
+JUCE/Builds/LinuxMakefile/build/NewProject
+JUCE/Builds/LinuxMakefile/build/NewProject.a
+JUCE/Builds/LinuxMakefile/build/NewProject.vst3
