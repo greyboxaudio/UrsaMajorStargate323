@@ -226,8 +226,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     gainModAddress = gainModContOut | gainModBaseAddr;
                     gainModOut = U77[gainModAddress];
 
-                    gainOut = U78[gainAddress + d];
-                    gainOut = gainOut;
+                    gainOut = U78[gainAddress + d] << 1;
 
                     if (gainModOut < gainOut && nGainModEnable == 0)
                     {
@@ -238,8 +237,18 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                         gainCeiling[1 + d] = gainOut;
                     }
 
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[1 + d] = nGSN;
+
                     mReadPosition = static_cast<int>(delayTaps[1 + d]);
-                    mFeedbackGain = (gainCeiling[1 + d] / 256.0);
+                    if (signMod[1 + d] == 0)
+                    {
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0) * -1.0;
+                    }
+                    else
+                    {
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0);
+                    }
                     mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
                 }
                 mFeedbackTaps = mFeedbackTaps / 4.0;
@@ -266,12 +275,22 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
 
                     delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
 
-                    gainOut = U78[gainAddress + d];
+                    gainOut = U78[gainAddress + d] << 1;
 
                     gainCeiling[16 + d] = gainOut;
 
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[16 + d] = nGSN;
+
                     mReadPosition = static_cast<int>(delayTaps[16 + d]);
-                    mOutputGain = (gainCeiling[16 + d] / 256.0);
+                    if (signMod[16 + d] == 0)
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0) * -1.0;
+                    }
+                    else
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0);
+                    }
                     mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
                 }
                 mOutputTaps = mOutputTaps / 4.0;
@@ -294,12 +313,22 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
 
                     delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
 
-                    gainOut = U78[gainAddress + d];
+                    gainOut = U78[gainAddress + d] << 1;
 
                     gainCeiling[16 + d] = gainOut;
 
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[16 + d] = nGSN;
+
                     mReadPosition = static_cast<int>(delayTaps[16 + d]);
-                    mOutputGain = (gainCeiling[16 + d] / 256.0);
+                    if (signMod[16 + d] == 0)
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0) * -1.0;
+                    }
+                    else
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0);
+                    }
                     mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
                 }
                 mOutputTaps = mOutputTaps / 4.0;

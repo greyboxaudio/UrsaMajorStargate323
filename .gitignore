@@ -5,3 +5,4 @@ Simulation/stargate_323_ltspice.raw
 JUCE/Builds/LinuxMakefile/build/NewProject
 JUCE/Builds/LinuxMakefile/build/NewProject.a
 JUCE/Builds/LinuxMakefile/build/NewProject.vst3/Contents/x86_64-linux/NewProject.so
+JUCE/Builds/LinuxMakefile/build/intermediate/Debug/*.*
