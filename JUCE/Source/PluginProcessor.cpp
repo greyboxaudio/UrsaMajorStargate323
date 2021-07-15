@@ -149,6 +149,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
+    mInputBuffer.setSize(1, buffer.getNumSamples());
     mOutputBuffer.setSize(getTotalNumInputChannels(), buffer.getNumSamples());
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -156,20 +157,25 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
     {
         //auto* channelData = buffer.getWritePointer (channel);
         // ..do something to the data...
         const int bufferLength = buffer.getNumSamples();
         const int numInputChannels = getTotalNumInputChannels();
         const int delayBufferLength = mDelayBuffer.getNumSamples();
+        mInputGain = 1.0 / totalNumInputChannels;
+        mInputBuffer.addFrom(0, 0, buffer, channel, 0, bufferLength, mInputGain);
 
         //copy the data from main buffer to delay buffer
         if (channel == 0)
         {
-
             for (int y = 0; y < bufferLength; y++)
             {
+                /*
+                mInputBuffer.addSample(0, y, mFeedbackTaps);
+                */
+
                 //calculate base address factors
                 gainBaseAddr = (decayTime << 5) | (program << 8);
                 preDelay_high = preDelay >> 3;
@@ -193,7 +199,8 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                 colDelay = colDelay >> 2;
                 //store address
                 mWritePosition = static_cast<int>((rowDelay) + (colDelay * 256));
-                mDelayBuffer.copyFrom(channel, mWritePosition, buffer, channel, y, 1);
+                //write sample
+                mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
 
                 //calculate feedback taps
                 dly_mod_addr = delayModBaseAddr + 7;
@@ -251,7 +258,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     }
                     mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
                 }
-                mFeedbackTaps = mFeedbackTaps / 4.0;
+                mFeedbackTaps = mFeedbackTaps / 15.0;
 
                 //calculate output taps
                 gainAddress = gainBaseAddr + 23;
@@ -368,8 +375,12 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     delayModBaseAddr = delayModCount << 5;
                 }
             }
+            //add output samples to buffer
+            buffer.copyFrom(0, 0, mOutputBuffer, 0, 0, bufferLength);
+            buffer.copyFrom(1, 0, mOutputBuffer, 1, 0, bufferLength);
+            //clear input buffer
+            mInputBuffer.clear(0, 0, bufferLength);
         }
-        buffer.copyFrom(channel, 0, mOutputBuffer, channel, 0, bufferLength);
     }
 }
 
