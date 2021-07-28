@@ -19,7 +19,7 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
 #endif
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      )
+      ), apvts (*this, nullptr, "Parameters", createParameters())
 #endif
 {
 }
@@ -164,7 +164,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
         const int bufferLength = buffer.getNumSamples();
         const int numInputChannels = getTotalNumInputChannels();
         const int delayBufferLength = mDelayBuffer.getNumSamples();
-        mInputGain = 1.0 / totalNumInputChannels;
+        mInputGain = 1.0f / totalNumInputChannels;
         mInputBuffer.addFrom(0, 0, buffer, channel, 0, bufferLength, mInputGain);
 
         //copy the data from main buffer to delay buffer
@@ -250,15 +250,15 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     mReadPosition = static_cast<int>(delayTaps[1 + d]);
                     if (signMod[1 + d] == 0)
                     {
-                        mFeedbackGain = (gainCeiling[1 + d] / 256.0) * -1.0;
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
                     }
                     else
                     {
-                        mFeedbackGain = (gainCeiling[1 + d] / 256.0);
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
                     }
                     mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
                 }
-                mFeedbackTaps = mFeedbackTaps / 15.0;
+                mFeedbackTaps = mFeedbackTaps / 15.0f;
 
                 //calculate output taps
                 gainAddress = gainBaseAddr + 23;
@@ -292,15 +292,15 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     mReadPosition = static_cast<int>(delayTaps[16 + d]);
                     if (signMod[16 + d] == 0)
                     {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0) * -1.0;
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
                     }
                     else
                     {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0);
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
                     }
                     mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
                 }
-                mOutputTaps = mOutputTaps / 4.0;
+                mOutputTaps = mOutputTaps / 4.0f;
                 mOutputBuffer.setSample(0, y, mOutputTaps);
                 //right output taps
                 for (int d = 4; d < 8; d++)
@@ -330,15 +330,15 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     mReadPosition = static_cast<int>(delayTaps[16 + d]);
                     if (signMod[16 + d] == 0)
                     {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0) * -1.0;
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
                     }
                     else
                     {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0);
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
                     }
                     mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
                 }
-                mOutputTaps = mOutputTaps / 4.0;
+                mOutputTaps = mOutputTaps / 4.0f;
                 //const float *outputTapsData = mOutputTaps;
                 mOutputBuffer.setSample(1, y, mOutputTaps);
 
@@ -414,4 +414,14 @@ void NewProjectAudioProcessor::setStateInformation(const void *data, int sizeInB
 juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 {
     return new NewProjectAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+
+    parameters.push_back (std::make_unique<juce::AudioParameterInt>("PROGRAM", "Program", 0, 7, 3));
+
+    return { parameters.begin(), parameters.end() };
+
 }
