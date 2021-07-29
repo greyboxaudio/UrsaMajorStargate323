@@ -157,6 +157,8 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    program = *apvts.getRawParameterValue ("PROGRAM");
+
     for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
     {
         //auto* channelData = buffer.getWritePointer (channel);
@@ -420,7 +422,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
 
-    parameters.push_back (std::make_unique<juce::AudioParameterInt>("PROGRAM", "Program", 0, 7, 3));
+    parameters.push_back (std::make_unique<juce::AudioParameterChoice>("PROGRAM", "Program",
+        StringArray ("Plate 1", "Plate 2", "Chamber", "Small Hall", "Hall", "Large Hall", "Cathedral", "Canyon"), 0));
 
     return { parameters.begin(), parameters.end() };
 
