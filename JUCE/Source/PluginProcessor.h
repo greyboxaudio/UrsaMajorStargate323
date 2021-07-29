@@ -68,6 +68,8 @@ private:
     float mOutputTaps { 0 };
     float mFeedbackGain { 0 };
     float mFeedbackTaps { 0 };
+    int mProgramID = { 0 };
+    int mPrograms[8] = {3,2,0,1,5,4,6,7};
 
     __uint8_t program = 7;   // program from low to high (3,2,0,1,5,4,6,7)
     __uint8_t preDelay = 3; // predelay from low to high (3,2,0,1,5,4,6,7,11,10,8,9,13,12,14,15)

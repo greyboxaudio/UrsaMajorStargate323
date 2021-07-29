@@ -157,7 +157,8 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    program = *apvts.getRawParameterValue ("PROGRAM");
+    mProgramID = *apvts.getRawParameterValue ("PROGRAM");
+    program = mPrograms[mProgramID];
 
     for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
     {
