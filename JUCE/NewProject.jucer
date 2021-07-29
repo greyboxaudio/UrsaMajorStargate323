@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="td03nI" name="delay_buffer" projectType="audioplug" useAppConfig="0"
-              displaySplashScreen="1" jucerFormatVersion="1">
-  <MAINGROUP id="lSX4bU" name="delay_buffer">
+<JUCERPROJECT id="td03nI" name="SG-323" projectType="audioplug" useAppConfig="0"
+              displaySplashScreen="0" jucerFormatVersion="1" version="0.1"
+              pluginManufacturer="krabbencutter" pluginVST3Category="Reverb">
+  <MAINGROUP id="lSX4bU" name="SG-323">
     <GROUP id="{E920FC25-995F-AFDA-9E36-C6E63BB3FCA3}" name="Source">
       <FILE id="U77V1F" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
