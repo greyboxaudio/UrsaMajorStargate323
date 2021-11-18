@@ -1,0 +1,22 @@
+Circuit: * C:\Users\Robert\Documents\GitHub\UrsaMajorStargate323\Simulation\stargate_323_ltspice_dacTest.asc
+
+WARNING: Less than two connections to node 5V.  This node is used by V4.
+Direct Newton iteration for .op point succeeded.
+
+Date: Mon Nov 01 16:42:39 2021
+Total elapsed time: 0.218 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 17545
+traniter = 17536
+tranpoints = 8769
+accept = 6023
+rejected = 2746
+matrix size = 14
+fillins = 1
+solver = Normal
+Matrix Compiler1: 662 bytes object code size  0.3/0.2/[0.1]
+Matrix Compiler2: 1.25 KB object code size  0.3/0.3/[0.2]
+
