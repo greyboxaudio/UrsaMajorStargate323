@@ -271,8 +271,8 @@ int main()
             {
                 gain[k] = (gainCeiling[k] / 256.0);
             }
-            fprintf(fp, "%2i|%.2f|%.3f  ", k + 1, delayTime[k], gain[k]);
-            //fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+            //fprintf(fp, "%2i|%.2f|%.3f  ", k + 1, delayTime[k], gain[k]);
+            fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
         }
         if (j < t - 1)
         {

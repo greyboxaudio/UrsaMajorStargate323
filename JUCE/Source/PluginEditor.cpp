@@ -20,7 +20,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     programBox.addItem ("Hall", 6);
     programBox.addItem ("Large Hall", 5);
     programBox.addItem ("Cathedral", 7);
-    programBox.addItem ("Canyon", 8);
+    programBox.addItem ("P8 005", 8);
     programBox.setJustificationType (Justification::centred);
     addAndMakeVisible (programBox);
 
