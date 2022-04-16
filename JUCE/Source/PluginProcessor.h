@@ -63,7 +63,10 @@ private:
     AudioBuffer<float> mFeedbackBuffer;
     AudioBuffer<float> mOutputBuffer;
     int mSampleRateMod { 3 };
-    int mSampleRateCount { 1 };
+    int mSampleRateCount { 0 };
+    int mBufferLengthMod { 0 };
+    int ypsilon { 0 };
+    int mDelayOverflow { 0 }; 
     float mInputGain { 0 };
     int mWritePosition { 0 };
     int mReadPosition { 0 };

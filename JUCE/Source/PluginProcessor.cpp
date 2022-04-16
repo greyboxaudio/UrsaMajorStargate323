@@ -152,6 +152,12 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
 
     mInputBuffer.setSize(1, buffer.getNumSamples());
     mFeedbackBuffer.setSize(1, buffer.getNumSamples());
+    if (mSampleRateCount == 0)
+    {
+        mFeedbackBuffer.clear(0, 0, buffer.getNumSamples());
+        mSampleRateCount = 1;
+    }
+    
     mOutputBuffer.setSize(getTotalNumInputChannels(), buffer.getNumSamples());
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -182,65 +188,40 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
         //nly process delay calculation on the last channel.
         if (channel == 0)
         {    
-        //Pre-Emphasis input buffer
+            //Pre-Emphasis input buffer
 
-        
-        //invert & gain adjust feedback buffer * -0.655
-
-
-        //low pass feedback buffer @ 48kHz
+            
+            //invert & gain adjust feedback buffer * -0.655
 
 
-        //high pass feedback buffer @ 22Hz
+            //low pass feedback buffer @ 48kHz
 
 
-        //dip filter for feedback buffer -2dB @ 9kHz
+            //high pass feedback buffer @ 22Hz
 
 
-        //gain adjust feedback buffer * 2,16
-        //sum inputbuffer + feedbackbuffer
-        mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, 2.16f);
-        mFeedbackBuffer.clear(0, 0, bufferLength);
+            //dip filter for feedback buffer -2dB @ 9kHz
 
-            //iterate through all the samples in the buffer
-            for (int y = 0; y < bufferLength; y++)
-            {
 
-                //calculate base address factors
-                gainBaseAddr = (decayTime << 5) | (program << 8);
-                preDelay_high = preDelay >> 3;
-                preDelay_low = preDelay << 5;
-                preDelay_low = preDelay_low >> 5;
-                delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+            //gain adjust feedback buffer * 2,16
+            //sum inputbuffer + feedbackbuffer
+            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, 2.16f);
+            mFeedbackBuffer.clear(0, 0, bufferLength);
 
-                //calculate write tap (=test tap)
-                //calculate address row
-                result = nROW;
-                bit6 = result << 1;
-                bit6 = bit6 >> 7;
-                MSB = result;
-                MSB = MSB >> 7;
-                delayCarryOut = result >> 8;
-                rowDelay = result << 2;
-                rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-                //calculate address column
-                result = nCOLUMN + delayCarryOut;
-                colDelay = result << 2;
-                colDelay = colDelay >> 2;
-                //store address
-                mWritePosition = static_cast<int>((rowDelay) + (colDelay * 256));
-                //write sample
-                mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
+                //iterate through all the samples in the buffer
+                for (int y = 0; y < bufferLength; y++)
+                {   
 
-                //calculate feedback taps
-                dly_mod_addr = delayModBaseAddr + 7;
-                dly_addr = delayBaseAddr + 16;
-                gainModContAddress = gainModContBaseAddr + 8;
-                gainAddress = gainBaseAddr + 8;
-                for (int d = 0; d < 15; d++)
-                {
+                    //calculate base address factors
+                    gainBaseAddr = (decayTime << 5) | (program << 8);
+                    preDelay_high = preDelay >> 3;
+                    preDelay_low = preDelay << 5;
+                    preDelay_low = preDelay_low >> 5;
+                    delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
 
-                    result = U79[dly_mod_addr + d] + nROW;
+                    //calculate write tap (=test tap)
+                    //calculate address row
+                    result = nROW;
                     bit6 = result << 1;
                     bit6 = bit6 >> 7;
                     MSB = result;
@@ -248,172 +229,199 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, ju
                     delayCarryOut = result >> 8;
                     rowDelay = result << 2;
                     rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-
-                    result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
+                    //calculate address column
+                    result = nCOLUMN + delayCarryOut;
                     colDelay = result << 2;
                     colDelay = colDelay >> 2;
+                    //store address
+                    mWritePosition = static_cast<int>((rowDelay) + (colDelay * 256));
+                    //write sample
+                    mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
 
-                    delayTaps[1 + d] = (rowDelay) + (colDelay * 256);
-
-                    gainModContOut = U76[gainModContAddress + d];
-                    nGainModEnable = gainModContOut >> 3;
-                    gainModContOut = gainModContOut << 5;
-                    gainModContOut = gainModContOut >> 5;
-
-                    gainModAddress = gainModContOut | gainModBaseAddr;
-                    gainModOut = U77[gainModAddress];
-
-                    gainOut = U78[gainAddress + d] << 1;
-
-                    if (gainModOut < gainOut && nGainModEnable == 0)
+                    //calculate feedback taps
+                    dly_mod_addr = delayModBaseAddr + 7;
+                    dly_addr = delayBaseAddr + 16;
+                    gainModContAddress = gainModContBaseAddr + 8;
+                    gainAddress = gainBaseAddr + 8;
+                    for (int d = 0; d < 15; d++)
                     {
-                        gainCeiling[1 + d] = gainModOut;
-                    }
-                    else
-                    {
-                        gainCeiling[1 + d] = gainOut;
-                    }
 
-                    nGSN = U78[gainAddress + d] >> 7;
-                    signMod[1 + d] = nGSN;
+                        result = U79[dly_mod_addr + d] + nROW;
+                        bit6 = result << 1;
+                        bit6 = bit6 >> 7;
+                        MSB = result;
+                        MSB = MSB >> 7;
+                        delayCarryOut = result >> 8;
+                        rowDelay = result << 2;
+                        rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
 
-                    mReadPosition = static_cast<int>(delayTaps[1 + d]);
-                    if (signMod[1 + d] == 0)
-                    {
-                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
+                        result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
+                        colDelay = result << 2;
+                        colDelay = colDelay >> 2;
+
+                        delayTaps[1 + d] = (rowDelay) + (colDelay * 256);
+
+                        gainModContOut = U76[gainModContAddress + d];
+                        nGainModEnable = gainModContOut >> 3;
+                        gainModContOut = gainModContOut << 5;
+                        gainModContOut = gainModContOut >> 5;
+
+                        gainModAddress = gainModContOut | gainModBaseAddr;
+                        gainModOut = U77[gainModAddress];
+
+                        gainOut = U78[gainAddress + d] << 1;
+
+                        if (gainModOut < gainOut && nGainModEnable == 0)
+                        {
+                            gainCeiling[1 + d] = gainModOut;
+                        }
+                        else
+                        {
+                            gainCeiling[1 + d] = gainOut;
+                        }
+
+                        nGSN = U78[gainAddress + d] >> 7;
+                        signMod[1 + d] = nGSN;
+
+                        mReadPosition = static_cast<int>(delayTaps[1 + d]);
+                        if (signMod[1 + d] == 0)
+                        {
+                            mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
+                        }
+                        else
+                        {
+                            mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
+                        }
+                        mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
                     }
-                    else
+                    mFeedbackTaps = mFeedbackTaps / 15.0f;
+                    mFeedbackTaps = mFeedbackTaps * mFeedbackMod;
+                    mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
+
+                    //calculate output taps
+                    gainAddress = gainBaseAddr + 23;
+                    dly_mod_addr = delayBaseAddr + 45;
+                    dly_addr = delayBaseAddr + 46;
+
+                    //left output taps
+                    for (int d = 0; d < 3; d++)
                     {
-                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
+                        result = U69[dly_mod_addr + d * 2] + nROW;
+                        bit6 = result << 1;
+                        bit6 = bit6 >> 7;
+                        MSB = result;
+                        MSB = MSB >> 7;
+                        delayCarryOut = result >> 8;
+                        rowDelay = result << 2;
+                        rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+
+                        result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
+                        colDelay = result << 2;
+                        colDelay = colDelay >> 2;
+
+                        delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
+
+                        gainOut = U78[gainAddress + d] << 1;
+
+                        gainCeiling[16 + d] = gainOut;
+
+                        nGSN = U78[gainAddress + d] >> 7;
+                        signMod[16 + d] = nGSN;
+
+                        mReadPosition = static_cast<int>(delayTaps[16 + d]);
+                        if (signMod[16 + d] == 0)
+                        {
+                            mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+                        }
+                        else
+                        {
+                            mOutputGain = (gainCeiling[16 + d] / 256.0f);
+                        }
+                        mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
                     }
-                    mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
+                    mOutputTaps = mOutputTaps / 4.0f;
+                    mOutputBuffer.setSample(0, y, mOutputTaps);
+
+                    //right output taps
+                    for (int d = 4; d < 8; d++)
+                    {
+                        result = U69[dly_mod_addr + d * 2] + nROW;
+                        bit6 = result << 1;
+                        bit6 = bit6 >> 7;
+                        MSB = result;
+                        MSB = MSB >> 7;
+                        delayCarryOut = result >> 8;
+                        rowDelay = result << 2;
+                        rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+
+                        result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
+                        colDelay = result << 2;
+                        colDelay = colDelay >> 2;
+
+                        delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
+
+                        gainOut = U78[gainAddress + d] << 1;
+
+                        gainCeiling[16 + d] = gainOut;
+
+                        nGSN = U78[gainAddress + d] >> 7;
+                        signMod[16 + d] = nGSN;
+
+                        mReadPosition = static_cast<int>(delayTaps[16 + d]);
+                        if (signMod[16 + d] == 0)
+                        {
+                            mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+                        }
+                        else
+                        {
+                            mOutputGain = (gainCeiling[16 + d] / 256.0f);
+                        }
+                        mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
+                    }
+                    mOutputTaps = mOutputTaps / 4.0f;
+                    //const float *outputTapsData = mOutputTaps;
+                    mOutputBuffer.setSample(1, y, mOutputTaps);
+
+                    //mod rate counter
+                    modClockOut = modClockOut + 1;
+                    if (modClockOut == 16)
+                    {
+                        modRateCount = rateLvl | (program << 4);
+                        modClockOut = U71[modRateCount];
+                    }
+                    modCarry = (modClockOut + 1) >> 4;
+
+                    //advance write address & wraparound if < 0
+                    writeAddressCount = writeAddressCount - 1;
+                    if (writeAddressCount < 0)
+                    {
+                        writeAddressCount = 16383;
+                    }
+                    nROW = writeAddressCount;
+                    nCOLUMN = writeAddressCount >> 8;
+                    MCCK = modCarry;
+                    if (MCCK == 1)
+                    {
+                        modCount = modCount + 1;
+                        if (modCount > 8191)
+                        {
+                            modCount = 0;
+                        }
+
+                        gainModContBaseAddr = (modCount >> 6) << 5;
+                        gainModBaseAddr = modCount << 7;
+                        gainModBaseAddr = gainModBaseAddr >> 4;
+                        delayModCount = modCount >> 6;
+                        delayModBaseAddr = delayModCount << 5;
+                    }
+                    y = y+2;
+                    ypsilon = y;
                 }
-                mFeedbackTaps = mFeedbackTaps / 15.0f;
-                mFeedbackTaps = mFeedbackTaps * mFeedbackMod;
-                mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
-
-                //calculate output taps
-                gainAddress = gainBaseAddr + 23;
-                dly_mod_addr = delayBaseAddr + 45;
-                dly_addr = delayBaseAddr + 46;
-
-                //left output taps
-                for (int d = 0; d < 3; d++)
-                {
-                    result = U69[dly_mod_addr + d * 2] + nROW;
-                    bit6 = result << 1;
-                    bit6 = bit6 >> 7;
-                    MSB = result;
-                    MSB = MSB >> 7;
-                    delayCarryOut = result >> 8;
-                    rowDelay = result << 2;
-                    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-
-                    result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
-                    colDelay = result << 2;
-                    colDelay = colDelay >> 2;
-
-                    delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
-
-                    gainOut = U78[gainAddress + d] << 1;
-
-                    gainCeiling[16 + d] = gainOut;
-
-                    nGSN = U78[gainAddress + d] >> 7;
-                    signMod[16 + d] = nGSN;
-
-                    mReadPosition = static_cast<int>(delayTaps[16 + d]);
-                    if (signMod[16 + d] == 0)
-                    {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-                    }
-                    else
-                    {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
-                    }
-                    mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-                }
-                mOutputTaps = mOutputTaps / 4.0f;
-                mOutputBuffer.setSample(0, y, mOutputTaps);
-
-                //right output taps
-                for (int d = 4; d < 8; d++)
-                {
-                    result = U69[dly_mod_addr + d * 2] + nROW;
-                    bit6 = result << 1;
-                    bit6 = bit6 >> 7;
-                    MSB = result;
-                    MSB = MSB >> 7;
-                    delayCarryOut = result >> 8;
-                    rowDelay = result << 2;
-                    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-
-                    result = U69[dly_addr + d * 2] + nCOLUMN + delayCarryOut;
-                    colDelay = result << 2;
-                    colDelay = colDelay >> 2;
-
-                    delayTaps[16 + d] = (rowDelay) + (colDelay * 256);
-
-                    gainOut = U78[gainAddress + d] << 1;
-
-                    gainCeiling[16 + d] = gainOut;
-
-                    nGSN = U78[gainAddress + d] >> 7;
-                    signMod[16 + d] = nGSN;
-
-                    mReadPosition = static_cast<int>(delayTaps[16 + d]);
-                    if (signMod[16 + d] == 0)
-                    {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-                    }
-                    else
-                    {
-                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
-                    }
-                    mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-                }
-                mOutputTaps = mOutputTaps / 4.0f;
-                //const float *outputTapsData = mOutputTaps;
-                mOutputBuffer.setSample(1, y, mOutputTaps);
-
-                //mod rate counter
-                modClockOut = modClockOut + 1;
-                if (modClockOut == 16)
-                {
-                    modRateCount = rateLvl | (program << 4);
-                    modClockOut = U71[modRateCount];
-                }
-                modCarry = (modClockOut + 1) >> 4;
-
-                //advance write address & wraparound if < 0
-                writeAddressCount = writeAddressCount - 1;
-                if (writeAddressCount < 0)
-                {
-                    writeAddressCount = 16383;
-                }
-                nROW = writeAddressCount;
-                nCOLUMN = writeAddressCount >> 8;
-                MCCK = modCarry;
-                if (MCCK == 1)
-                {
-                    modCount = modCount + 1;
-                    if (modCount > 8191)
-                    {
-                        modCount = 0;
-                    }
-
-                    gainModContBaseAddr = (modCount >> 6) << 5;
-                    gainModBaseAddr = modCount << 7;
-                    gainModBaseAddr = gainModBaseAddr >> 4;
-                    delayModCount = modCount >> 6;
-                    delayModBaseAddr = delayModCount << 5;
-                }
-            }
-            //add output samples to buffer
-            buffer.copyFrom(0, 0, mOutputBuffer, 0, 0, bufferLength);
-            buffer.copyFrom(1, 0, mOutputBuffer, 1, 0, bufferLength);
-            //clear input buffer
-            mInputBuffer.clear(0, 0, bufferLength);
+                //add output samples to buffer
+                buffer.copyFrom(0, 0, mOutputBuffer, 0, 0, bufferLength);
+                buffer.copyFrom(1, 0, mOutputBuffer, 1, 0, bufferLength);
+                //clear input buffer
+                mInputBuffer.clear(0, 0, bufferLength);
         }
     }
 }
