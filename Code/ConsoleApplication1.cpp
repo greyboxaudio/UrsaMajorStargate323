@@ -292,8 +292,12 @@ int main()
 						// gain[k] = (gainCeiling[k] / 256.0);
 						gain[k] = (gainCeiling[k]);
 					}
-					if (k >= 16) {
-						fprintf(fp, "%2i| %3.2f|%-4.0f  ", k + 1, delayTime[k], gain[k]);
+					if (k >= 16 && m==0) {
+						fprintf(fp, "%2i| %3.2f  ", k + 1, delayTime[k]);
+						//fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+					}
+					if (k >= 16 && m == 15) {
+						fprintf(fp, "%2i| %3.2f  ", k + 1, delayTime[k]);
 						//fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
 					}
 				}
