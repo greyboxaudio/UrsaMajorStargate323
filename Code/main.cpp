@@ -4,7 +4,7 @@
 
 int calculateAddress(unsigned short rowInput, unsigned short columnInput)
 {
-    //calculate address row
+    // calculate address row
     unsigned short result = rowInput;
     uint8_t bit6 = result << 1;
     bit6 = bit6 >> 7;
@@ -13,21 +13,28 @@ int calculateAddress(unsigned short rowInput, unsigned short columnInput)
     uint8_t delayCarryOut = result >> 8;
     uint8_t rowDelay = result << 2;
     rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
-    //calculate address column
+    // calculate address column
     result = columnInput + delayCarryOut;
     uint8_t columnDelay = result << 2;
     columnDelay = columnDelay >> 2;
     return (rowDelay) + (columnDelay * 256);
 }
+
 int countWriteAddress(short writeAddress)
 {
-    //advance write address & wraparound if < 0
+    // advance write address & wraparound if < 0
     short writeAddressIncr = writeAddress - 1;
     if (writeAddressIncr < 0)
     {
         writeAddressIncr = 16383;
     }
     return writeAddressIncr;
+}
+
+float roundBits(float inputSample){
+    short roundedSample = inputSample * 32768;
+    float outputSample = roundedSample * 0.000030518;
+    return (outputSample);
 }
 
 int main()
@@ -79,21 +86,27 @@ int main()
     unsigned short delayModBaseAddr{};
     unsigned short dly_mod_addr{};
 
+    float leftInputSample{};
+    float rightInputSample{};
+    float feedbackInputSample{};
+    float leftOutputSample{};
+    float rightOutputSample{};
+
     uint8_t program = programArray[8];
     uint8_t preDelay = preDelayArray[0];
     uint8_t decayTime = decayTimeArray[8];
     uint8_t rateLevel = rateLevelArray[0];
-    unsigned long t = 8192 * 1; //machine frames for testing (8192 * 13 for a full set)
+    unsigned long t = 8192 * 1; // machine frames for testing (8192 * 13 for a full set)
 
     FILE *fp;
-    //errno_t err;
-    //err = fopen_s(&fp, "Stargate_Debug.txt", "w");
+    // errno_t err;
+    // err = fopen_s(&fp, "Stargate_Debug.txt", "w");
     fp = fopen("Stargate_Debug_test.txt", "w");
 
-    //store write address sequence for debugging
+    // store write address sequence for debugging
     for (int j = 0; j < 16384; j++)
     {
-        //calculate write address
+        // calculate write address
         rowInput = nROW;
         columnInput = nCOLUMN;
         dram[j] = calculateAddress(rowInput, columnInput);
@@ -104,30 +117,34 @@ int main()
         nCOLUMN = countWriteAddress(writeAddress) >> 8;
         writeAddress = countWriteAddress(writeAddress);
     }
-    //reset variables
+    // reset variables
     writeAddress = 16383;
     nROW = 255;
     nCOLUMN = 255;
-    //main loop
+
+    // main loop
+
+    //DSP: inputSum > preEmphasis > addFeedback > variableHPF > variableLPF > antiAlias > roundBits > Delay+Gain > sumFeedback, sumLeftOutput, sumRightOutput > deEmphasis > antiAlias
+
     for (int j = 0; j < t; j++)
     {
-        //calculate base address factors
+        // calculate base address factors
         gainBaseAddr = (decayTime << 5) | (program << 8);
         preDelay_high = preDelay >> 3;
         preDelay_low = preDelay << 5;
         preDelay_low = preDelay_low >> 5;
         delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
-        //calculate write tap (=test tap)
+        // calculate write tap (=test tap)
         rowInput = nROW;
         columnInput = nCOLUMN;
         delayTaps[0] = calculateAddress(rowInput, columnInput);
-        //calculate gain value
+        // calculate gain value
         gainAddress = gainBaseAddr + 7;
         gainOut = U78[gainAddress] << 1;
-        nGSN = U78[gainAddress] >> 7; //read sign mod
-        gainCeiling[0] = gainOut; //store gain value
-        signMod[0] = nGSN; //store sign
-        //calculate feedback taps
+        nGSN = U78[gainAddress] >> 7; // read sign mod
+        gainCeiling[0] = gainOut;     // store gain value
+        signMod[0] = nGSN;            // store sign
+        // calculate feedback taps
         dly_mod_addr = delayModBaseAddr + 7;
         dly_addr = delayBaseAddr + 16;
         gainModContAddress = gainModContBaseAddr + 8;
@@ -159,7 +176,7 @@ int main()
             nGSN = U78[gainAddress + d] >> 7;
             signMod[1 + d] = nGSN;
         }
-        //calculate output taps
+        // calculate output taps
         gainAddress = gainBaseAddr + 23;
         dly_mod_addr = delayBaseAddr + 45;
         dly_addr = delayBaseAddr + 46;
@@ -174,7 +191,7 @@ int main()
             nGSN = U78[gainAddress + d] >> 7;
             signMod[16 + d] = nGSN;
         }
-        //mod rate counter
+        // mod rate counter
         modClockOut = modClockOut + 1;
         if (modClockOut == 16)
         {
@@ -202,8 +219,8 @@ int main()
             delayModCount = modCount >> 6;
             delayModBaseAddr = delayModCount << 5;
         }
-        //print out debug data
-        //fprintf(fp, "%5i / ", j);
+        // print out debug data
+        // fprintf(fp, "%5i / ", j);
         for (int k = 0; k < 24; k++)
         {
             for (int l = 0; l < 16384; l++)
@@ -217,28 +234,28 @@ int main()
                 {
                     if (delayTime[24] >= l)
                     {
-                        //delayTime[k] = ((delayTime[24] - l) * 31.25) / 1000;
+                        // delayTime[k] = ((delayTime[24] - l) * 31.25) / 1000;
                         delayTime[k] = delayTime[24] - l;
                     }
                     else
                     {
-                        //delayTime[k] = 512.0 + (((delayTime[24] - l) * 31.25) / 1000);
+                        // delayTime[k] = 512.0 + (((delayTime[24] - l) * 31.25) / 1000);
                         delayTime[k] = 16384 + (delayTime[24] - l);
                     }
                 }
             }
             if (signMod[k] == 0)
             {
-                //gain[k] = (gainCeiling[k] / 256.0) * -1;
+                // gain[k] = (gainCeiling[k] / 256.0) * -1;
                 gain[k] = (gainCeiling[k]) * -1;
             }
             else
             {
-                //gain[k] = (gainCeiling[k] / 256.0);
+                // gain[k] = (gainCeiling[k] / 256.0);
                 gain[k] = (gainCeiling[k]);
             }
             fprintf(fp, "%2i|%5.0f|%-4.0f  ", k + 1, delayTime[k], gain[k]);
-            //fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+            // fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
         }
         fprintf(fp, "\n");
     }
