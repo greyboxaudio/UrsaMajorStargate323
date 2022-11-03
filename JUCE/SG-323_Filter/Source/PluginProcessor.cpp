@@ -93,8 +93,14 @@ void NewProjectAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    //initialize delay buffer
+    const int numInputChannels = 1;
+    const int delayBufferSize = 16384;
+    mDelayBuffer.setSize(numInputChannels, delayBufferSize);
+    // clear delaybuffer to prevent feedback / NaNs
+    for (auto i = 0; i < numInputChannels; ++i)
+        mDelayBuffer.clear(i, 0, delayBufferSize);
+    //set up filters
     lastSampleRate = sampleRate;
     halfSampleRate = sampleRate * 0.5f;
     s1b0 = 1.0f;
@@ -174,6 +180,41 @@ bool NewProjectAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
+int calculateAddress(unsigned short rowInput, unsigned short columnInput)
+{
+    // calculate address row
+    unsigned short result = rowInput;
+    uint8_t bit6 = result << 1;
+    bit6 = bit6 >> 7;
+    uint8_t MSB = result;
+    MSB = MSB >> 7;
+    uint8_t delayCarryOut = result >> 8;
+    uint8_t rowDelay = result << 2;
+    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+    // calculate address column
+    result = columnInput + delayCarryOut;
+    uint8_t columnDelay = result << 2;
+    columnDelay = columnDelay >> 2;
+    return (rowDelay)+(columnDelay * 256);
+}
+
+int countWriteAddress(short writeAddress)
+{
+    // advance write address & wraparound if < 0
+    short writeAddressIncr = writeAddress - 1;
+    if (writeAddressIncr < 0)
+    {
+        writeAddressIncr = 16383;
+    }
+    return writeAddressIncr;
+}
+
+float roundBits(float inputSample) {
+    short roundedSample = inputSample * 32768;
+    float outputSample = roundedSample * 0.000030518;
+    return (outputSample);
+}
+
 void NewProjectAudioProcessor::updateFilter()
 {
     *inputHighPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(lastSampleRate, 14.0f);
@@ -203,31 +244,217 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    juce::dsp::AudioBlock <float> block (buffer);
-    //DSP: inputSum > preEmphasis > addFeedback > variableHPF > variableLPF > antiAlias > roundBits > Delay+Gain > sumFeedback, sumLeftOutput, sumRightOutput > deEmphasis > antiAlias
-    updateFilter();
-    preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(block));
-    inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(block));
-    //inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(block));
-    deEmphasis.process(juce::dsp::ProcessContextReplacing <float> (block));
-    gainModule.setGainLinear(1.16304862499237060546875f);
-    gainModule.process(juce::dsp::ProcessContextReplacing <float>(block));
-    antiAliasFirstStage.process(juce::dsp::ProcessContextReplacing <float>(block));
-    gainModule.setGainLinear(3.4951908588409423828125f);
-    gainModule.process(juce::dsp::ProcessContextReplacing <float>(block));
-    antiAliasSecondStage.process(juce::dsp::ProcessContextReplacing <float>(block));
-    gainModule.setGainLinear(0.0372033305466175079345703125f);
-    gainModule.process(juce::dsp::ProcessContextReplacing <float>(block));
-    antiAliasThirdStage.process(juce::dsp::ProcessContextReplacing <float>(block));
-    /*feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(block));
-    feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(block));
-    feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(block));*/
+    mInputBuffer.setSize(1, buffer.getNumSamples());
+    mFeedbackBuffer.setSize(1, buffer.getNumSamples());
+    if (mSampleRateCount == 0)
+    {
+        mFeedbackBuffer.clear(0, 0, buffer.getNumSamples());
+        mSampleRateCount = 1;
+    }
+
+    mOutputBuffer.setSize(getTotalNumInputChannels(), buffer.getNumSamples());
+    
+    //main loop
+    for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
+    {
+        const int bufferLength = buffer.getNumSamples();
+        const int numInputChannels = getTotalNumInputChannels();
+        const int delayBufferLength = mDelayBuffer.getNumSamples();
+
+        mInputGain = 1.0f / totalNumInputChannels; //Adjust input buffer gain
+        mInputBuffer.addFrom(0, 0, buffer, channel, 0, bufferLength, mInputGain); //sum input channels together
+        if (channel == 0) //only process delay calculation on the last channel
+        { 
+            juce::dsp::AudioBlock <float> feedbackBlock(mFeedbackBuffer);//assign feedbackbuffer as audioblock
+            juce::dsp::AudioBlock <float> inputBlock(mInputBuffer); //assign inputbuffer as audioblock
+            juce::dsp::AudioBlock <float> outputBlock(mOutputBuffer); //assign outputbuffer as audioblock
+            updateFilter();
+            feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+            feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+            feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+
+            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -1.0f); //sum inputbuffer & feedbackbuffer
+            mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
+
+            preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(inputBlock)); //preEmphasis
+            inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            //elliptical anti aliasing filter @ 48khz
+            gainModule.setGainLinear(1.16304862499237060546875f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            antiAliasFirstStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            gainModule.setGainLinear(3.4951908588409423828125f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            antiAliasSecondStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            gainModule.setGainLinear(0.0372033305466175079345703125f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+            antiAliasThirdStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+
+            //iterate through all the samples in the buffer
+            for (int y = 0; y < bufferLength; y++)
+            {
+                // calculate base address factors
+                gainBaseAddr = (decayTime << 5) | (program << 8);
+                preDelay_high = preDelay >> 3;
+                preDelay_low = preDelay << 5;
+                preDelay_low = preDelay_low >> 5;
+                delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
+
+                // calculate write tap (=test tap)
+                rowInput = nROW;
+                columnInput = nCOLUMN;
+                mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput));//store address
+                mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);//write sample
+
+                // calculate feedback taps
+                dly_mod_addr = delayModBaseAddr + 7;
+                dly_addr = delayBaseAddr + 16;
+                gainModContAddress = gainModContBaseAddr + 8;
+                gainAddress = gainBaseAddr + 8;
+                for (int d = 0; d < 15; d++)
+                {
+                    rowInput = U79[dly_mod_addr + d] + nROW;
+                    columnInput = U69[dly_addr + d * 2] + nCOLUMN;
+                    delayTaps[1 + d] = calculateAddress(rowInput, columnInput);
+
+                    gainModContOut = U76[gainModContAddress + d];
+                    nGainModEnable = gainModContOut >> 3;
+                    gainModContOut = gainModContOut << 5;
+                    gainModContOut = gainModContOut >> 5;
+
+                    gainModAddress = gainModContOut | gainModBaseAddr;
+                    gainModOut = U77[gainModAddress];
+
+                    gainOut = U78[gainAddress + d] << 1;
+                    if (gainModOut < gainOut && nGainModEnable == 0)
+                    {
+                        gainCeiling[1 + d] = gainModOut;
+                    }
+                    else
+                    {
+                        gainCeiling[1 + d] = gainOut;
+                    }
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[1 + d] = nGSN;
+
+                    mReadPosition = static_cast<int>(delayTaps[1 + d]);
+                    if (signMod[1 + d] == 0)
+                    {
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
+                    }
+                    else
+                    {
+                        mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
+                    }
+                    mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
+                }
+                mFeedbackTaps = mFeedbackTaps / 15.0f;
+                mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
+
+                // calculate output taps
+                gainAddress = gainBaseAddr + 23;
+                dly_mod_addr = delayBaseAddr + 45;
+                dly_addr = delayBaseAddr + 46;
+
+                //left output taps
+                for (int d = 0; d < 3; d++)
+                {
+                    rowInput = U69[dly_mod_addr + d * 2] + nROW;
+                    columnInput = U69[dly_addr + d * 2] + nCOLUMN;
+                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput);
+
+                    gainOut = U78[gainAddress + d] << 1;
+                    gainCeiling[16 + d] = gainOut;
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[16 + d] = nGSN;
+
+                    mReadPosition = static_cast<int>(delayTaps[16 + d]);
+                    if (signMod[16 + d] == 0)
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+                    }
+                    else
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
+                    }
+                    mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
+                }
+                mOutputTaps = mOutputTaps / 4.0f;
+                mOutputBuffer.setSample(0, y, mOutputTaps);
+
+                //right output taps
+                for (int d = 4; d < 8; d++)
+                {
+                    rowInput = U69[dly_mod_addr + d * 2] + nROW;
+                    columnInput = U69[dly_addr + d * 2] + nCOLUMN;
+                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput);
+
+                    gainOut = U78[gainAddress + d] << 1;
+                    gainCeiling[16 + d] = gainOut;
+                    nGSN = U78[gainAddress + d] >> 7;
+                    signMod[16 + d] = nGSN;
+
+                    mReadPosition = static_cast<int>(delayTaps[16 + d]);
+                    if (signMod[16 + d] == 0)
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+                    }
+                    else
+                    {
+                        mOutputGain = (gainCeiling[16 + d] / 256.0f);
+                    }
+                    mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
+                }
+                mOutputTaps = mOutputTaps / 4.0f;
+                mOutputBuffer.setSample(1, y, mOutputTaps);
+
+                // mod rate counter
+                modClockOut = modClockOut + 1;
+                if (modClockOut == 16)
+                {
+                    modRateCount = rateLevel | (program << 4);
+                    modClockOut = U71[modRateCount];
+                }
+                modCarry = (modClockOut + 1) >> 4;
+
+                nROW = countWriteAddress(writeAddress);
+                nCOLUMN = countWriteAddress(writeAddress) >> 8;
+                writeAddress = countWriteAddress(writeAddress);
+
+                MCCK = modCarry;
+                if (MCCK == 1)
+                {
+                    modCount = modCount + 1;
+                    if (modCount > 8191)
+                    {
+                        modCount = 0;
+                    }
+
+                    gainModContBaseAddr = (modCount >> 6) << 5;
+                    gainModBaseAddr = modCount << 7;
+                    gainModBaseAddr = gainModBaseAddr >> 4;
+                    delayModCount = modCount >> 6;
+                    delayModBaseAddr = delayModCount << 5;
+                }
+            }
+            deEmphasis.process(juce::dsp::ProcessContextReplacing <float>(outputBlock)); //deEmphasis
+            //elliptical anti aliasing filter @ 48khz
+            /*gainModule.setGainLinear(1.16304862499237060546875f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+            antiAliasFirstStage.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+            gainModule.setGainLinear(3.4951908588409423828125f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+            antiAliasSecondStage.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+            gainModule.setGainLinear(0.0372033305466175079345703125f);
+            gainModule.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+            antiAliasThirdStage.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));*/
+            //add output samples to buffer
+            buffer.copyFrom(0, 0, mOutputBuffer, 0, 0, bufferLength);
+            buffer.copyFrom(1, 0, mOutputBuffer, 1, 0, bufferLength);
+        }
+        //clear input buffer
+        mInputBuffer.clear(0, 0, bufferLength);
+    }
 }
 
 //==============================================================================
