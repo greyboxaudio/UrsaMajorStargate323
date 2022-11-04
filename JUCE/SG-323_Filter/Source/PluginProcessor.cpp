@@ -103,24 +103,6 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     //set up filters
     lastSampleRate = sampleRate;
     halfSampleRate = sampleRate * 0.5f;
-    s1b0 = 1.0f;
-    s1b1 = 1.224283695220947265625f;
-    s1b2 = 1.0f;
-    s1a0 = 1.0f;
-    s1a1 = 0.4837161600589752197265625f;
-    s1a2 = 0.717677175998687744140625f;
-    s2b0 = 1.0f;
-    s2b1 = 1.828480243682861328125f;
-    s2b2 = 1.0f;
-    s2a0 = 1.0f;
-    s2a1 = -0.2016279697418212890625f;
-    s2a2 = 0.19512404501438140869140625f;
-    s3b0 = 1.0f;
-    s3b1 = 0.982987344264984130859375f;
-    s3b2 = 1.0f;
-    s3a0 = 1.0f;
-    s3a1 = 0.7548847198486328125f;
-    s3a2 = 0.942220151424407958984375f;
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
@@ -146,6 +128,78 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     antiAliasThirdStage.prepare(spec);
     antiAliasThirdStage.reset();
     gainModule.prepare(spec);
+    if (sampleRate == 44100.0)
+    {
+        s1b0 = 1.0f;
+        s1b1 = 1.4407613277435302734375f;
+        s1b2 = 1.0f;
+        s1a0 = 1.0f;
+        s1a1 = 0.78177297115325927734375f;
+        s1a2 = 0.73473322391510009765625f;
+        s1gain = 1.2458820343017578125f;
+        s2b0 = 1.0f;
+        s2b1 = 1.88249099254608154296875f;
+        s2b2 = 1.0f;
+        s2a0 = 1.0f;
+        s2a1 = 0.0306032598018646240234375f;
+        s2a2 = 0.18833030760288238525390625f;
+        s2gain = 4.228640079498291015625f;
+        s3b0 = 1.0f;
+        s3b1 = 1.25116384029388427734375f;
+        s3b2 = 1.0f;
+        s3a0 = 1.0f;
+        s3a1 = 1.0544550418853759765625f;
+        s3a2 = 0.9471471309661865234375f;
+        s3gain = 0.037988282740116119384765625f;
+    }
+    if (sampleRate == 48000.0)
+    {
+        s1b0 = 1.0f;
+        s1b1 = 1.224283695220947265625f;
+        s1b2 = 1.0f;
+        s1a0 = 1.0f;
+        s1a1 = 0.4837161600589752197265625f;
+        s1a2 = 0.717677175998687744140625f;
+        s1gain = 1.16304862499237060546875f;
+        s2b0 = 1.0f;
+        s2b1 = 1.828480243682861328125f;
+        s2b2 = 1.0f;
+        s2a0 = 1.0f;
+        s2a1 = -0.2016279697418212890625f;
+        s2a2 = 0.19512404501438140869140625f;
+        s2gain = 3.4951908588409423828125f;
+        s3b0 = 1.0f;
+        s3b1 = 0.982987344264984130859375f;
+        s3b2 = 1.0f;
+        s3a0 = 1.0f;
+        s3a1 = 0.7548847198486328125f;
+        s3a2 = 0.942220151424407958984375f;
+        s3gain = 0.0372033305466175079345703125f;
+    }
+    if (sampleRate == 96000.0)
+    {
+        s1b0 = 1.0f;
+        s1b1 = -0.4685294330120086669921875f;
+        s1b2 = 1.0f;
+        s1a0 = 1.0f;
+        s1a1 = -1.01597499847412109375f;
+        s1a2 = 0.635424196720123291015625f;
+        s1gain = 0.73602163791656494140625f;
+        s2b0 = 1.0f;
+        s2b1 = 1.1502001285552978515625f;
+        s2b2 = 1.0f;
+        s2a0 = 1.0f;
+        s2a1 = -0.972325623035430908203125f;
+        s2a2 = 0.2985363900661468505859375f;
+        s2gain = 1.00631582736968994140625f;
+        s3b0 = 1.0f;
+        s3b1 = -0.846724808216094970703125f;
+        s3b2 = 1.0f;
+        s3a0 = 1.0f;
+        s3a1 = -1.07159888744354248046875f;
+        s3a2 = 0.901829421520233154296875f;
+        s3gain = 0.0404760427772998809814453125f;
+    }
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -282,13 +336,13 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
 
             //elliptical anti aliasing filter @ 48khz
-            gainModule.setGainLinear(1.16304862499237060546875f);
+            gainModule.setGainLinear(s1gain);
             gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             antiAliasFirstStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-            gainModule.setGainLinear(3.4951908588409423828125f);
+            gainModule.setGainLinear(s2gain);
             gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             antiAliasSecondStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-            gainModule.setGainLinear(0.0372033305466175079345703125f);
+            gainModule.setGainLinear(s3gain);
             gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             antiAliasThirdStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
 

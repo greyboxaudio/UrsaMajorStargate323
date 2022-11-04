@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Fz30Yy" name="SG-323 Filter" projectType="audioplug" useAppConfig="0"
+<JUCERPROJECT id="Fz30Yy" name="SG-323" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              companyName="krabbencutter">
-  <MAINGROUP id="XVaZsj" name="SG-323 Filter">
+              companyName="krabbencutter" version="0.1" pluginFormats="buildVST3"
+              pluginVST3Category="Fx,Reverb">
+  <MAINGROUP id="XVaZsj" name="SG-323">
     <GROUP id="{3DFB34E8-7447-7DAC-89E0-C92D3AC10D00}" name="Source">
       <FILE id="o6DruI" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

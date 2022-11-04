@@ -87,3 +87,36 @@ JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/NewProject_VST3.tlog/r
 JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/NewProject_VST3.tlog/rc.write.1.tlog
 JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/NewProject_VST3.vcxproj.FileListAbsolute.txt
 JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/resources.res
+*.vsidx
+*.bin
+*.db
+*.lock
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/.suo
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/Browse.VC.db-shm
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/Browse.VC.db-wal
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/Browse.VC.opendb
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/ipch/AutoPCH/157410abcf57eb54/PLUGINPROCESSOR.ipch
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/Solution.VC.db-shm
+JUCE/SG-323_Filter/Builds/VisualStudio2022/.vs/SG-323/v17/Solution.VC.db-wal
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/CL.13416.write.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/CL.command.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/CL.read.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/Lib-link.read.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/Lib-link.write.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/Lib.command.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_S.35673C29.tlog/SG-323_SharedCode.lastbuildstate
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_SharedCode.log
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/Shared Code/SG-323_SharedCode.vcxproj.FileListAbsolute.txt
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.log
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/CL.command.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/CL.read.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/CL.write.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/link.command.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/link.read.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/link.write.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/rc.command.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/rc.read.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/rc.write.1.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/SG-323_VST3.lastbuildstate
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.tlog/SG-323_VST3.write.1u.tlog
+JUCE/SG-323_Filter/Builds/VisualStudio2022/x64/Debug/VST3/SG-323_VST3.vcxproj.FileListAbsolute.txt
