@@ -111,6 +111,10 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     inputHighPass.reset();
     inputLowPass.prepare(spec);
     inputLowPass.reset();
+    randomHighPass.prepare(spec);
+    randomHighPass.reset();
+    randomLowPass.prepare(spec);
+    randomLowPass.reset();
     preEmphasis.prepare(spec);
     preEmphasis.reset();
     deEmphasis.prepare(spec);
@@ -151,6 +155,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         s3a1 = 1.0544550418853759765625f;
         s3a2 = 0.9471471309661865234375f;
         s3gain = 0.037988282740116119384765625f;
+        modRateCeiling = 22;
+        modScale = 1.378125f;
     }
     if (sampleRate == 48000.0)
     {
@@ -175,6 +181,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         s3a1 = 0.7548847198486328125f;
         s3a2 = 0.942220151424407958984375f;
         s3gain = 0.0372033305466175079345703125f;
+        modRateCeiling = 24;
+        modScale = 1.5f;
     }
     if (sampleRate == 96000.0)
     {
@@ -199,6 +207,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         s3a1 = -1.07159888744354248046875f;
         s3a2 = 0.901829421520233154296875f;
         s3gain = 0.0404760427772998809814453125f;
+        modRateCeiling = 48;
+        modScale = 3.0f;
     }
 }
 
@@ -273,6 +283,8 @@ void NewProjectAudioProcessor::updateFilter()
 {
     *inputHighPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(lastSampleRate, 14.0f);
     *inputLowPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass(lastSampleRate, halfSampleRate);
+    *randomHighPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(lastSampleRate, 106.0f);
+    *randomLowPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass(lastSampleRate, 370.0f);
     *preEmphasis.state = *juce::dsp::IIR::Coefficients<float>::makeHighShelf(lastSampleRate, 4000.0f, 0.5f, 4.0f);
     *deEmphasis.state = *juce::dsp::IIR::Coefficients<float>::makeHighShelf(lastSampleRate, 4000.0f, 0.5f, 0.25f);
     *feedBackHighPass.state = *juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(lastSampleRate, 22.0f);
@@ -299,6 +311,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, buffer.getNumSamples());
 
     mInputBuffer.setSize(1, buffer.getNumSamples());
+    mRandomBuffer.setSize(1, buffer.getNumSamples());
     mFeedbackBuffer.setSize(1, buffer.getNumSamples());
     if (mSampleRateCount == 0)
     {
@@ -325,20 +338,30 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             juce::dsp::AudioBlock <float> feedbackBlock(mFeedbackBuffer);//assign feedbackbuffer as audioblock
             juce::dsp::AudioBlock <float> inputBlock(mInputBuffer); //assign inputbuffer as audioblock
             juce::dsp::AudioBlock <float> outputBlock(mOutputBuffer); //assign outputbuffer as audioblock
+            juce::dsp::AudioBlock <float> randomBlock(mRandomBuffer); //assign randombuffer as audioblock
             updateFilter();
 
-            preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(inputBlock)); //preEmphasis
+            //copy & filter random Sample buffer
+            mRandomBuffer.copyFrom(0, 0, mInputBuffer, 0, 0, bufferLength);
+            randomHighPass.process(juce::dsp::ProcessContextReplacing <float>(randomBlock));
+            randomLowPass.process(juce::dsp::ProcessContextReplacing <float>(randomBlock));
+
+            //preEmphasis input filter
+            preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
 
+            //feedback filter
             feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
             feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
             feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
 
-            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -4.5f); //sum inputbuffer & feedbackbuffer
-            mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
+            //sum inputbuffer & feedbackbuffer
+            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -4.5f); 
+            //clear feedbackbuffer
+            mFeedbackBuffer.clear(0, 0, bufferLength);
 
-            //elliptical anti aliasing filter @ 48khz
+            //elliptical anti aliasing filter
             gainModule.setGainLinear(s1gain);
             gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             antiAliasFirstStage.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
@@ -472,20 +495,61 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 mOutputTaps = mOutputTaps / 4.0f;
                 mOutputBuffer.setSample(1, y, mOutputTaps);
 
+                //process random sample
+                float randomSample = mRandomBuffer.getSample(0, y);
+                if (randomSample < 0)
+                {
+                    randomSample = randomSample * -0.33f;
+                }
+                //scale randomSample by a certain amount
+                randomSample = randomSample * 8.0f;
+
+                //calculate rateLVL value
+                int num1{ 0 };
+                int num2{ 0 };
+                int num3{ 0 };
+                int num4{ 0 };
+
+                if (randomSample >= 0.011f)
+                {
+                    num1 = 1;
+                }
+                if (randomSample >= 0.0356f)
+                {
+                    num2 = 2;
+                }
+                if (randomSample >= 0.0916f)
+                {
+                    num3 = 4;
+                }
+                if (randomSample >= 0.317f)
+                {
+                    num4 = 8;
+                }
+                rateLevel = num1 + num2 + num3 + num4;
+
                 // mod rate counter
                 modClockOut = modClockOut + 1;
-                if (modClockOut == 16)
+                if (modClockOut == modRateCeiling)
                 {
                     modRateCount = rateLevel | (program << 4);
-                    modClockOut = U71[modRateCount];
+                    float modClockOutScaled = U71[modRateCount] * modScale;
+                    modClockOut = modClockOutScaled;
                 }
-                modCarry = (modClockOut + 1) >> 4;
+                modCarry = modClockOut + 1;
+                if (modCarry >= modRateCeiling)
+                {
+                    MCCK = 1;
+                }
+                else
+                {
+                    MCCK = 0;
+                }
 
                 nROW = countWriteAddress(writeAddress);
                 nCOLUMN = countWriteAddress(writeAddress) >> 8;
                 writeAddress = countWriteAddress(writeAddress);
 
-                MCCK = modCarry;
                 if (MCCK == 1)
                 {
                     modCount = modCount + 1;

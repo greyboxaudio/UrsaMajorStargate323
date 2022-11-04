@@ -65,6 +65,7 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NewProjectAudioProcessor)
 
     juce::AudioBuffer<float> mInputBuffer;
+    juce::AudioBuffer<float> mRandomBuffer;
     juce::AudioBuffer<float> mDelayBuffer;
     juce::AudioBuffer<float> mFeedbackBuffer;
     juce::AudioBuffer<float> mOutputBuffer;
@@ -78,7 +79,7 @@ private:
     float mFeedbackTaps{};
     float lastSampleRate{};
     float halfSampleRate{};
-    int mProgramID = {};
+    int mProgramID{};
 
     float s1a0{ 1.0f };
     float s1a1{ 1.0f };
@@ -103,6 +104,8 @@ private:
     float s3gain{ 1.0f };
     juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> inputHighPass;
     juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> inputLowPass;
+    juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> randomHighPass;
+    juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> randomLowPass;
     juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> preEmphasis;
     juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> deEmphasis;
     juce::dsp::ProcessorDuplicator <juce::dsp::IIR::Filter <float>, juce::dsp::IIR::Coefficients <float>> feedBackDip;
@@ -123,7 +126,7 @@ private:
     int programArray[8]{ 3, 2, 0, 1, 5, 4, 6, 7 };
     int preDelayArray[16]{ 3, 2, 0, 1, 5, 4, 6, 7, 11, 10, 8, 9, 13, 12, 14, 15 };
     int decayTimeArray[8]{ 3, 2, 0, 1, 5, 4, 6, 7 };
-    int rateLevelArray[5]{ 15, 7, 3, 1, 0 };
+    uint8_t rateLevel{};
     unsigned short rowInput{};
     unsigned short columnInput{};
     unsigned short dram[16384];
@@ -145,7 +148,9 @@ private:
     uint8_t nROW{ 255 };
     uint8_t nCOLUMN{ 255 };
     uint8_t modRateCount{};
-    uint8_t modClockOut{};
+    unsigned short modRateCeiling{ 16 };
+    float modScale{ 1.0f };
+    unsigned short modClockOut{};
     uint8_t modCarry{};
     uint8_t MCCK{};
     unsigned short modCount{};
@@ -169,5 +174,4 @@ private:
     uint8_t program = programArray[7];
     uint8_t preDelay = preDelayArray[0];
     uint8_t decayTime = decayTimeArray[7];
-    uint8_t rateLevel = rateLevelArray[0];
 };
