@@ -57,6 +57,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void updateFilter();
+    juce::AudioProcessorValueTreeState apvts;
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 private:
     //==============================================================================
@@ -76,6 +78,7 @@ private:
     float mFeedbackTaps{};
     float lastSampleRate{};
     float halfSampleRate{};
+    int mProgramID = {};
 
     float s1a0{ 1.0f };
     float s1a1{ 1.0f };

@@ -19,7 +19,7 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts(*this, nullptr, "Parameters", createParameters())
 #endif
 {
 }
@@ -308,6 +308,9 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     mOutputBuffer.setSize(getTotalNumInputChannels(), buffer.getNumSamples());
     
+    mProgramID = *apvts.getRawParameterValue("PROGRAM");
+    program = programArray[mProgramID];
+
     //main loop
     for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
     {
@@ -543,4 +546,15 @@ void NewProjectAudioProcessor::setStateInformation (const void* data, int sizeIn
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new NewProjectAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("PROGRAM", "Program",
+        juce::StringArray("Plate 1", "Plate 2", "Chamber", "Small Hall", "Hall", "Large Hall", "Cathedral", "Canyon"), 0));
+
+    return { parameters.begin(), parameters.end() };
+
 }

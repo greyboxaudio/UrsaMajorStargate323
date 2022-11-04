@@ -155,7 +155,7 @@
  #define JucePlugin_ARAFactoryID           "com.krabbencutter.SG323.factory"
 #endif
 #ifndef  JucePlugin_ARADocumentArchiveID
- #define JucePlugin_ARADocumentArchiveID   "com.krabbencutter.SG323.aradocumentarchive.1.0.0"
+ #define JucePlugin_ARADocumentArchiveID   "com.krabbencutter.SG323.aradocumentarchive.0.1"
 #endif
 #ifndef  JucePlugin_ARACompatibleArchiveIDs
  #define JucePlugin_ARACompatibleArchiveIDs  ""
