@@ -95,7 +95,7 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 {
     //initialize delay buffer
     const int numInputChannels = 1;
-    const int delayBufferSize = 16384;
+    const int delayBufferSize = 512/((1/sampleRate)*1000);
     mDelayBuffer.setSize(numInputChannels, delayBufferSize);
     // clear delaybuffer to prevent feedback / NaNs
     for (auto i = 0; i < numInputChannels; ++i)
@@ -180,7 +180,7 @@ bool NewProjectAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
-int calculateAddress(unsigned short rowInput, unsigned short columnInput)
+int calculateAddress(unsigned short rowInput, unsigned short columnInput, float lastSampleRate)
 {
     // calculate address row
     unsigned short result = rowInput;
@@ -195,7 +195,7 @@ int calculateAddress(unsigned short rowInput, unsigned short columnInput)
     result = columnInput + delayCarryOut;
     uint8_t columnDelay = result << 2;
     columnDelay = columnDelay >> 2;
-    return (rowDelay)+(columnDelay * 256);
+    return ((rowDelay)+(columnDelay * 256))*0.00003125f*lastSampleRate;
 }
 
 int countWriteAddress(short writeAddress)
@@ -269,16 +269,18 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             juce::dsp::AudioBlock <float> inputBlock(mInputBuffer); //assign inputbuffer as audioblock
             juce::dsp::AudioBlock <float> outputBlock(mOutputBuffer); //assign outputbuffer as audioblock
             updateFilter();
-            feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-            feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-            feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-
-            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -1.0f); //sum inputbuffer & feedbackbuffer
-            mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
 
             preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(inputBlock)); //preEmphasis
             inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
             inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
+
+            feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+            feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+            feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+
+            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -4.2f); //sum inputbuffer & feedbackbuffer
+            mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
+
             //elliptical anti aliasing filter @ 48khz
             gainModule.setGainLinear(1.16304862499237060546875f);
             gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
@@ -303,7 +305,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 // calculate write tap (=test tap)
                 rowInput = nROW;
                 columnInput = nCOLUMN;
-                mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput));//store address
+                mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));//store address
                 mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);//write sample
 
                 // calculate feedback taps
@@ -315,7 +317,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 {
                     rowInput = U79[dly_mod_addr + d] + nROW;
                     columnInput = U69[dly_addr + d * 2] + nCOLUMN;
-                    delayTaps[1 + d] = calculateAddress(rowInput, columnInput);
+                    delayTaps[1 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
 
                     gainModContOut = U76[gainModContAddress + d];
                     nGainModEnable = gainModContOut >> 3;
@@ -361,7 +363,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 {
                     rowInput = U69[dly_mod_addr + d * 2] + nROW;
                     columnInput = U69[dly_addr + d * 2] + nCOLUMN;
-                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput);
+                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
 
                     gainOut = U78[gainAddress + d] << 1;
                     gainCeiling[16 + d] = gainOut;
@@ -387,7 +389,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 {
                     rowInput = U69[dly_mod_addr + d * 2] + nROW;
                     columnInput = U69[dly_addr + d * 2] + nCOLUMN;
-                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput);
+                    delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
 
                     gainOut = U78[gainAddress + d] << 1;
                     gainCeiling[16 + d] = gainOut;
