@@ -335,7 +335,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
             feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
 
-            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -4.2f); //sum inputbuffer & feedbackbuffer
+            mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -4.5f); //sum inputbuffer & feedbackbuffer
             mFeedbackBuffer.clear(0, 0, bufferLength); //clear feedbackbuffer
 
             //elliptical anti aliasing filter @ 48khz
@@ -362,8 +362,13 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 // calculate write tap (=test tap)
                 rowInput = nROW;
                 columnInput = nCOLUMN;
-                mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));//store address
-                mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);//write sample
+                //store address
+                mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));
+                //round sample to 16bits
+                float sampleRounded = mInputBuffer.getSample(channel, y);
+                mInputBuffer.setSample(channel, y, roundBits(sampleRounded));
+                //write sample
+                mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
 
                 // calculate feedback taps
                 dly_mod_addr = delayModBaseAddr + 7;
