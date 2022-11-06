@@ -93,7 +93,7 @@ void NewProjectAudioProcessor::changeProgramName(int index, const juce::String& 
 //==============================================================================
 void NewProjectAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-	//legacy code block
+	////legacy code block
 	////initialize delay buffer
 	//const int numInputChannels = 1;
 	//auto delayBufferSize = 16384;
@@ -590,7 +590,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	writePositionTest += bufferSizeTest;
 	writePositionTest %= delayBufferSizeTest;
 
-	//legacy code
+	////legacy code block
 	//mInputBuffer.setSize(1, buffer.getNumSamples());
 	//mRandomBuffer.setSize(1, buffer.getNumSamples());
 	//mOutputBuffer.setSize(totalNumOutputChannels, buffer.getNumSamples());
@@ -600,7 +600,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	//	mFeedbackBuffer.clear(0, 0, buffer.getNumSamples());
 	//	mSampleRateCount = 1;
 	//}
-	//main loop
+	////main loop
 	//for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
 	//{
 	//	const int bufferLength = buffer.getNumSamples();
