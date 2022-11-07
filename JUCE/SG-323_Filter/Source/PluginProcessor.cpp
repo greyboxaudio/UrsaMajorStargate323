@@ -285,7 +285,6 @@ int rngsus(float randomSample) {
 	int num2{};
 	int num3{};
 	int num4{};
-
 	if (randomSample >= 0.011f)
 	{
 		num1 = 1;
@@ -342,11 +341,11 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	//read program selection from the UI
 	mProgramID = *apvts.getRawParameterValue("PROGRAM");
 	program = programArray[mProgramID];
-
 	//prepare audio buffers
 	monoBuffer.setSize(1, bufferSizeTest);
 	mFeedbackBuffer.setSize(1, bufferSizeTest);
 	mRandomBuffer.setSize(1, bufferSizeTest);
+	mInputBuffer.setSize(totalNumInputChannels, bufferSizeTest);
 	mOutputBuffer.setSize(totalNumOutputChannels, bufferSizeTest);
 	if (mSampleRateCount == 0)
 	{
@@ -399,7 +398,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		float sampleRounded = monoBuffer.getSample(0, i) * trim;
 		monoBuffer.setSample(0, i, roundBits(sampleRounded));
 	}
-	//left output taps
+	//calculate the delay taps
 	for (int i = 0; i < bufferSizeTest; i++)
 	{
 		fractionalDelay.pushSample(0, data[i]);
@@ -460,8 +459,9 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			{
 				feedbackDelayTime += 16384;
 			}
+			adjustableDecay = *apvts.getRawParameterValue("DECAY");
 			feedbackDelayTime *= 0.00003125f;
-			feedbackDelayGain = mFeedbackGain * feedbackDelayGainMult;
+			feedbackDelayGain = mFeedbackGain * (feedbackDelayGainMult * adjustableDecay);
 			feedbackOutputSample += fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate, false) * feedbackDelayGain;
 		}
 		mFeedbackTaps = mFeedbackTaps / 15.0f;
@@ -517,6 +517,8 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		float outputDelayTime{};
 		float outputDelayGain{};
 		//left output taps
+		adjustablePreDelay = *apvts.getRawParameterValue("PREDELAY");
+		adjustablePreDelay *= 320.0f;
 		for (int d = 0; d < 4; d++)
 		{
 			outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
@@ -538,10 +540,20 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	}
 	//apply de-emphasis filter on output taps
 	deEmphasis.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
+	//copy dry signal to buffer
+	for (int channel = 0; channel < totalNumInputChannels; channel++)
+	{
+		mInputBuffer.copyFrom(channel, 0, buffer, channel, 0, bufferSizeTest);
+	}
 	//write output taps to main buffer
 	for (int channel = 0; channel < totalNumOutputChannels; ++channel)
 	{
-		buffer.copyFrom(channel, 0, mOutputBuffer, channel, 0, bufferSizeTest);
+		auto* wetSignal = mOutputBuffer.getReadPointer(channel);
+		auto* drySignal = mInputBuffer.getReadPointer(channel);
+		float wetLevel = *apvts.getRawParameterValue("WETDRY");
+		float dryLevel = 1.0f - *apvts.getRawParameterValue("WETDRY");
+		buffer.copyFromWithRamp(channel, 0, drySignal, bufferSizeTest, dryLevel, dryLevel);
+		buffer.addFromWithRamp(channel, 0, wetSignal, bufferSizeTest, wetLevel, wetLevel);
 	}
 }
 //==============================================================================
@@ -582,6 +594,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
 
 	parameters.push_back(std::make_unique<juce::AudioParameterChoice>("PROGRAM", "Program",
 		juce::StringArray("Plate 1", "Plate 2", "Chamber", "Small Hall", "Hall", "Large Hall", "Cathedral", "Canyon"), 0));
+	parameters.push_back(std::make_unique<juce::AudioParameterFloat>("PREDELAY", "PreDelay", 0.0f, 1.0f, 0.0f));
+	parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", 0.0f, 1.0f, 1.0f));
+	parameters.push_back(std::make_unique<juce::AudioParameterFloat>("WETDRY", "WetDry", 0.0f, 1.0f, 0.5f));
 
 	return { parameters.begin(), parameters.end() };
 

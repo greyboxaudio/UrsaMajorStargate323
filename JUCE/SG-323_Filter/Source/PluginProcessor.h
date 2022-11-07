@@ -13,10 +13,10 @@
 //==============================================================================
 /**
 */
-class NewProjectAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class NewProjectAudioProcessor : public juce::AudioProcessor
+#if JucePlugin_Enable_ARA
+    , public juce::AudioProcessorARAExtension
+#endif
 {
 public:
     //==============================================================================
@@ -24,14 +24,14 @@ public:
     ~NewProjectAudioProcessor() override;
 
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
+#ifndef JucePlugin_PreferredChannelConfigurations
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+#endif
 
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -48,22 +48,23 @@ public:
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
-    void setCurrentProgram (int index) override;
-    const juce::String getProgramName (int index) override;
-    void changeProgramName (int index, const juce::String& newName) override;
+    void setCurrentProgram(int index) override;
+    const juce::String getProgramName(int index) override;
+    void changeProgramName(int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (juce::MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
+    void getStateInformation(juce::MemoryBlock& destData) override;
+    void setStateInformation(const void* data, int sizeInBytes) override;
 
     void updateFilter();
     juce::AudioProcessorValueTreeState apvts;
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 private:
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
     juce::AudioBuffer<float> mRandomBuffer;
     juce::AudioBuffer<float> mFeedbackBuffer;
     juce::AudioBuffer<float> mOutputBuffer;
+    juce::AudioBuffer<float> mInputBuffer;
     juce::AudioBuffer<float> monoBuffer;
 
     int mSampleRateCount{};
@@ -77,12 +78,14 @@ private:
     float lastSampleRate{};
     float halfSampleRate{};
     int mProgramID{};
+    float adjustablePreDelay{};
+    float adjustableDecay{ 1.0f };
+    float adjustableWetDry{ 0.5f };
 
     int programArray[8]{ 3, 2, 0, 1, 5, 4, 6, 7 };
     int preDelayArray[16]{ 3, 2, 0, 1, 5, 4, 6, 7, 11, 10, 8, 9, 13, 12, 14, 15 };
     int decayTimeArray[8]{ 3, 2, 0, 1, 5, 4, 6, 7 };
 
-    float adjustablePreDelay{};
     float outputGainArray[8]{ -0.996f, 0.996f, 0.622f, 0.378f, 0.378f, 0.622f, 0.966f, -0.966f };
     float outputDelayArray[16]{ 10.5f, 7.0f, 3.5f, 0.0f, 19.0f, 13.0f, 7.0f, 1.0f, 11.5f, 8.0f, 4.5f, 1.0f, 20.0f, 14.0f, 8.0f, 2.0f };
     uint8_t rateLevel{};
