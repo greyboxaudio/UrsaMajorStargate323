@@ -393,7 +393,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
 	//fill feedback buffer
 	mFeedbackBuffer.copyFrom(0, 0, monoBuffer, 0, 0, bufferSizeTest);
-	auto* data = mFeedbackBuffer.getWritePointer(0);
+	auto* data = mFeedbackBuffer.getReadPointer(0);
 	//this is the emulation of the original Stargate 323's internal logic.
 	//The original unit is highly parallelized and needs to process each sample individually.
 	//the calculations for delay & gain modulation is also on a per-sample basis
@@ -412,6 +412,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		delayAddress = delayBaseAddr + 16;
 		gainModContAddress = gainModContBaseAddr + 8;
 		gainAddress = gainBaseAddr + 8;
+		float feedbackSample{};
 		for (int d = 0; d < 15; d++)
 		{
 			rowInput = U79[delayModAddress + d] + nROW;
@@ -450,20 +451,12 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			{
 				mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
 			}
-			float feedbackGainMult{ -0.2f };
-			float feedbackSampleGain = mFeedbackGain * feedbackGainMult;
 			//experimental fractional delay
 			fractionalDelay.pushSample(0, data[i]);
-			if (d == 0)
-			{
-				data[i] = (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate) * feedbackSampleGain);
-			}
-			else
-			{
-				data[i] += (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate) * feedbackSampleGain);
-			}
-			
+			feedbackSample += (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate, false) * mFeedbackGain);
 		}
+		float feedbackGainMult{ -0.2f };
+		mFeedbackBuffer.setSample(0, i, feedbackSample * feedbackGainMult);
 		//process random sample
 		float randomSample = mRandomBuffer.getSample(0, i);
 		if (randomSample < 0)
