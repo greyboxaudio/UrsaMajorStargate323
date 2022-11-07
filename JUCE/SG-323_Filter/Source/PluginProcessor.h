@@ -61,14 +61,7 @@ public:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 private:
-    juce::AudioBuffer<float> delayBufferTest;
-    int writePositionTest{};
-    void fillBuffer(int channel, int bufferSizeTest, int delayBufferSizeTest, float* channelData, float summingGain);
-    void readFromBuffer(int delayBufferSizeTest, int bufferSizeTest, int channel, juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& delayBufferTest, float outputDelayTime, float outputDelayGain);
-
-    juce::AudioBuffer<float> mInputBuffer;
     juce::AudioBuffer<float> mRandomBuffer;
-    juce::AudioBuffer<float> mDelayBuffer;
     juce::AudioBuffer<float> mFeedbackBuffer;
     juce::AudioBuffer<float> mOutputBuffer;
     juce::AudioBuffer<float> monoBuffer;

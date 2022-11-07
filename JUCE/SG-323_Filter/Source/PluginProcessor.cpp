@@ -93,22 +93,8 @@ void NewProjectAudioProcessor::changeProgramName(int index, const juce::String& 
 //==============================================================================
 void NewProjectAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-	////legacy code block
-	////initialize delay buffer
-	//const int numInputChannels = 1;
-	//auto delayBufferSize = 16384;
-	//mDelayBuffer.setSize(numInputChannels, delayBufferSize);
-	//// clear delaybuffer to prevent feedback / NaNs
-	//for (auto i = 0; i < numInputChannels; ++i)
-	//	mDelayBuffer.clear(i, 0, delayBufferSize);
-
-	//reworked code block
 	auto numInputChannelsTest = getTotalNumInputChannels();
-	auto delayBufferTestSize = sampleRate * 0.512;
-	delayBufferTest.setSize(numInputChannelsTest, static_cast<int>(delayBufferTestSize));
-	for (auto i = 0; i < numInputChannelsTest; ++i)
-		delayBufferTest.clear(i, 0, delayBufferTestSize);
-
+	auto delayBufferSize = sampleRate * 0.512;
 	//set up filters
 	lastSampleRate = sampleRate;
 	halfSampleRate = sampleRate * 0.5f;
@@ -144,7 +130,7 @@ void NewProjectAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBl
 	gainModule.reset();
 	fractionalDelay.prepare(spec);
 	fractionalDelay.reset();
-	fractionalDelay.setMaximumDelayInSamples(delayBufferTestSize);
+	fractionalDelay.setMaximumDelayInSamples(delayBufferSize);
 	if (sampleRate == 44100.0)
 	{
 		s1b0 = 1.0f;
@@ -357,7 +343,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	mProgramID = *apvts.getRawParameterValue("PROGRAM");
 	program = programArray[mProgramID];
 
-	//reworked code block
 	//prepare audio buffers
 	monoBuffer.setSize(1, bufferSizeTest);
 	mFeedbackBuffer.setSize(1, bufferSizeTest);
@@ -397,8 +382,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	//sum input buffer & feedback buffer together
 	monoBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferSizeTest);
 	auto* data = monoBuffer.getReadPointer(0);
-	//clear feedback buffer
-	//mFeedbackBuffer.clear(0, 0, bufferSizeTest);
 	//apply anti-aliasing filter
 	gainModule.setGainLinear(s1gain);
 	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
@@ -430,11 +413,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		int rowInput = nROW;
 		int columnInput = nCOLUMN;
 		mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));
-		////round sample to 16bits
-		//float sampleRounded = mInputBuffer.getSample(channel, y);
-		//mInputBuffer.setSample(channel, y, roundBits(sampleRounded));
-		////write sample
-		//mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
 		// calculate feedback taps
 		delayModAddress = delayModBaseAddr + 7;
 		delayAddress = delayBaseAddr + 16;
@@ -485,91 +463,20 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			feedbackDelayTime *= 0.00003125f;
 			feedbackDelayGain = mFeedbackGain * feedbackDelayGainMult;
 			feedbackOutputSample += fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate, false) * feedbackDelayGain;
-			//mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
 		}
 		mFeedbackTaps = mFeedbackTaps / 15.0f;
-		//mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
 		mFeedbackBuffer.setSample(0, i, feedbackOutputSample);
-		// calculate output taps
-		gainAddress = gainBaseAddr + 23;
-		delayModAddress = delayBaseAddr + 45;
-		delayAddress = delayBaseAddr + 46;
-		//left output taps
-		for (int d = 0; d < 3; d++)
-		{
-			rowInput = U69[delayModAddress + d * 2] + nROW;
-			columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-			delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
-			gainOut = U78[gainAddress + d] << 1;
-			gainCeiling[16 + d] = gainOut;
-			nGSN = U78[gainAddress + d] >> 7;
-			signMod[16 + d] = nGSN;
-			mReadPosition = delayTaps[16 + d];
-			if (signMod[16 + d] == 0)
-			{
-				mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-			}
-			else
-			{
-				mOutputGain = (gainCeiling[16 + d] / 256.0f);
-			}
-			//mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-		}
-		mOutputTaps = mOutputTaps / 4.0f;
-		//mOutputBuffer.setSample(0, y, mOutputTaps);
-		//right output taps
-		for (int d = 4; d < 8; d++)
-		{
-			rowInput = U69[delayModAddress + d * 2] + nROW;
-			columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-			delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
-			gainOut = U78[gainAddress + d] << 1;
-			gainCeiling[16 + d] = gainOut;
-			nGSN = U78[gainAddress + d] >> 7;
-			signMod[16 + d] = nGSN;
-			mReadPosition = delayTaps[16 + d];
-			if (signMod[16 + d] == 0)
-			{
-				mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-			}
-			else
-			{
-				mOutputGain = (gainCeiling[16 + d] / 256.0f);
-			}
-			//mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-		}
-		mOutputTaps = mOutputTaps / 4.0f;
-		//mOutputBuffer.setSample(1, y, mOutputTaps);
 		//process random sample
 		float randomSample = mRandomBuffer.getSample(0, i);
 		if (randomSample < 0)
 		{
-			randomSample = randomSample * -0.33f;
+			randomSample *= -0.33f;
 		}
 		//scale randomSample by a certain amount
-		randomSample = randomSample * 8.0f;
+		float randomSampleMult = 8.0f;
+		randomSample *= randomSampleMult;
 		//calculate rateLVL value
-		int num1{ 0 };
-		int num2{ 0 };
-		int num3{ 0 };
-		int num4{ 0 };
-		if (randomSample >= 0.011f)
-		{
-			num1 = 1;
-		}
-		if (randomSample >= 0.0356f)
-		{
-			num2 = 2;
-		}
-		if (randomSample >= 0.0916f)
-		{
-			num3 = 4;
-		}
-		if (randomSample >= 0.317f)
-		{
-			num4 = 8;
-		}
-		rateLevel = num1 + num2 + num3 + num4;
+		rateLevel = rngsus(randomSample);
 		// mod rate counter
 		modClockOut = modClockOut + 1;
 		if (modClockOut == modRateCeiling)
@@ -603,18 +510,20 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			delayModCount = modCount >> 6;
 			delayModBaseAddr = delayModCount << 5;
 		}
-		//fractionalDelay.pushSample(0, data[i]);
+		//calculate output taps
 		float outputDelayGainMult = 0.75f;
 		float leftOutputSample{};
 		float rightOutputSample{};
 		float outputDelayTime{};
 		float outputDelayGain{};
+		//left output taps
 		for (int d = 0; d < 4; d++)
 		{
 			outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
 			outputDelayGain = outputGainArray[d] * outputDelayGainMult;
 			leftOutputSample += fractionalDelay.popSample(0, outputDelayTime * lastSampleRate, false) * outputDelayGain;
 		}
+		//right output taps
 		for (int d = 4; d < 7; d++)
 		{
 			outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
@@ -634,275 +543,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	{
 		buffer.copyFrom(channel, 0, mOutputBuffer, channel, 0, bufferSizeTest);
 	}
-	////legacy code block
-	//mInputBuffer.setSize(1, buffer.getNumSamples());
-	//mRandomBuffer.setSize(1, buffer.getNumSamples());
-	//mOutputBuffer.setSize(totalNumOutputChannels, buffer.getNumSamples());
-	//mFeedbackBuffer.setSize(1, buffer.getNumSamples());
-	//if (mSampleRateCount == 0)
-	//{
-	//	mFeedbackBuffer.clear(0, 0, buffer.getNumSamples());
-	//	mSampleRateCount = 1;
-	//}
-	////main loop
-	//for (int channel = totalNumInputChannels - 1; channel >= 0; --channel)
-	//{
-	//	const int bufferLength = buffer.getNumSamples();
-	//	const int numInputChannels = getTotalNumInputChannels();
-	//	const int delayBufferLength = mDelayBuffer.getNumSamples();
-	//	mInputGain = 1.0f / totalNumInputChannels; //Adjust input buffer gain
-	//	mInputBuffer.addFrom(0, 0, buffer, channel, 0, bufferLength, mInputGain); //sum input channels together
-	//	if (channel == 0) //only process delay calculation on the last channel
-	//	{
-	//		juce::dsp::AudioBlock <float> feedbackBlock(mFeedbackBuffer);//assign feedbackbuffer as audioblock
-	//		juce::dsp::AudioBlock <float> inputBlock(mInputBuffer); //assign inputbuffer as audioblock
-	//		juce::dsp::AudioBlock <float> outputBlock(mOutputBuffer); //assign outputbuffer as audioblock
-	//		juce::dsp::AudioBlock <float> randomBlock(mRandomBuffer); //assign randombuffer as audioblock
-	//		updateFilter();
-	//		//copy & filter random Sample buffer
-	//		mRandomBuffer.copyFrom(0, 0, mInputBuffer, 0, 0, bufferLength);
-	//		randomHighPass.process(juce::dsp::ProcessContextReplacing <float>(randomBlock));
-	//		randomLowPass.process(juce::dsp::ProcessContextReplacing <float>(randomBlock));
-	//		//preEmphasis input filter
-	//		preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		//feedback filter
-	//		feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	//		feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	//		feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	//		//sum inputbuffer & feedbackbuffer
-	//		mInputBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferLength, -2.1f);
-	//		//clear feedbackbuffer
-	//		mFeedbackBuffer.clear(0, 0, bufferLength);
-	//		//elliptical anti aliasing filter
-	//		gainModule.setGainLinear(s1gain);
-	//		gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		antiAliasFirstSection.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		gainModule.setGainLinear(s2gain);
-	//		gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		antiAliasSecondSection.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		gainModule.setGainLinear(s3gain);
-	//		gainModule.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		antiAliasThirdSection.process(juce::dsp::ProcessContextReplacing <float>(inputBlock));
-	//		//iterate through all the samples in the buffer
-	//		for (int y = 0; y < bufferLength; y++)
-	//		{
-	//			// calculate base address factors
-	//			gainBaseAddr = (decayTime << 5) | (program << 8);
-	//			preDelay_high = preDelay >> 3;
-	//			preDelay_low = preDelay << 5;
-	//			preDelay_low = preDelay_low >> 5;
-	//			delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
-	//			// calculate write tap (=test tap)
-	//			int rowInput = nROW;
-	//			int columnInput = nCOLUMN;
-	//			mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));
-	//			//round sample to 16bits
-	//			float sampleRounded = mInputBuffer.getSample(channel, y);
-	//			mInputBuffer.setSample(channel, y, roundBits(sampleRounded));
-	//			//write sample
-	//			mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
-	//			// calculate feedback taps
-	//			delayModAddress = delayModBaseAddr + 7;
-	//			delayAddress = delayBaseAddr + 16;
-	//			gainModContAddress = gainModContBaseAddr + 8;
-	//			gainAddress = gainBaseAddr + 8;
-	//			for (int d = 0; d < 15; d++)
-	//			{
-	//				rowInput = U79[delayModAddress + d] + nROW;
-	//				columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-	//				delayTaps[1 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
-	//				gainModContOut = U76[gainModContAddress + d];
-	//				nGainModEnable = gainModContOut >> 3;
-	//				gainModContOut = gainModContOut << 5;
-	//				gainModContOut = gainModContOut >> 5;
-	//				gainModAddress = gainModContOut | gainModBaseAddr;
-	//				gainModOut = U77[gainModAddress];
-	//				gainOut = U78[gainAddress + d] << 1;
-	//				if (gainModOut < gainOut && nGainModEnable == 0)
-	//				{
-	//					gainCeiling[1 + d] = gainModOut;
-	//				}
-	//				else
-	//				{
-	//					gainCeiling[1 + d] = gainOut;
-	//				}
-	//				nGSN = U78[gainAddress + d] >> 7;
-	//				signMod[1 + d] = nGSN;
-	//				mReadPosition = delayTaps[1 + d];
-	//				if (signMod[1 + d] == 0)
-	//				{
-	//					mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
-	//				}
-	//				else
-	//				{
-	//					mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
-	//				}
-	//				mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
-	//			}
-	//			mFeedbackTaps = mFeedbackTaps / 15.0f;
-	//			mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
-	//			// calculate output taps
-	//			gainAddress = gainBaseAddr + 23;
-	//			delayModAddress = delayBaseAddr + 45;
-	//			delayAddress = delayBaseAddr + 46;
-	//			//left output taps
-	//			for (int d = 0; d < 3; d++)
-	//			{
-	//				rowInput = U69[delayModAddress + d * 2] + nROW;
-	//				columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-	//				delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
-	//				gainOut = U78[gainAddress + d] << 1;
-	//				gainCeiling[16 + d] = gainOut;
-	//				nGSN = U78[gainAddress + d] >> 7;
-	//				signMod[16 + d] = nGSN;
-	//				mReadPosition = delayTaps[16 + d];
-	//				if (signMod[16 + d] == 0)
-	//				{
-	//					mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-	//				}
-	//				else
-	//				{
-	//					mOutputGain = (gainCeiling[16 + d] / 256.0f);
-	//				}
-	//				mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-	//			}
-	//			mOutputTaps = mOutputTaps / 4.0f;
-	//			mOutputBuffer.setSample(0, y, mOutputTaps);
-	//			//right output taps
-	//			for (int d = 4; d < 8; d++)
-	//			{
-	//				rowInput = U69[delayModAddress + d * 2] + nROW;
-	//				columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-	//				delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
-	//				gainOut = U78[gainAddress + d] << 1;
-	//				gainCeiling[16 + d] = gainOut;
-	//				nGSN = U78[gainAddress + d] >> 7;
-	//				signMod[16 + d] = nGSN;
-	//				mReadPosition = delayTaps[16 + d];
-	//				if (signMod[16 + d] == 0)
-	//				{
-	//					mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
-	//				}
-	//				else
-	//				{
-	//					mOutputGain = (gainCeiling[16 + d] / 256.0f);
-	//				}
-	//				mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
-	//			}
-	//			mOutputTaps = mOutputTaps / 4.0f;
-	//			mOutputBuffer.setSample(1, y, mOutputTaps);
-	//			//process random sample
-	//			float randomSample = mRandomBuffer.getSample(0, y);
-	//			if (randomSample < 0)
-	//			{
-	//				randomSample = randomSample * -0.33f;
-	//			}
-	//			//scale randomSample by a certain amount
-	//			randomSample = randomSample * 8.0f;
-	//			//calculate rateLVL value
-	//			int num1{ 0 };
-	//			int num2{ 0 };
-	//			int num3{ 0 };
-	//			int num4{ 0 };
-	//			if (randomSample >= 0.011f)
-	//			{
-	//				num1 = 1;
-	//			}
-	//			if (randomSample >= 0.0356f)
-	//			{
-	//				num2 = 2;
-	//			}
-	//			if (randomSample >= 0.0916f)
-	//			{
-	//				num3 = 4;
-	//			}
-	//			if (randomSample >= 0.317f)
-	//			{
-	//				num4 = 8;
-	//			}
-	//			rateLevel = num1 + num2 + num3 + num4;
-	//			// mod rate counter
-	//			modClockOut = modClockOut + 1;
-	//			if (modClockOut == modRateCeiling)
-	//			{
-	//				modRateCount = rateLevel | (program << 4);
-	//				float modClockOutScaled = U71[modRateCount] * modScale;
-	//				modClockOut = modClockOutScaled;
-	//			}
-	//			modCarry = modClockOut + 1;
-	//			if (modCarry >= modRateCeiling)
-	//			{
-	//				MCCK = 1;
-	//			}
-	//			else
-	//			{
-	//				MCCK = 0;
-	//			}
-	//			nROW = countWriteAddress(writeAddress);
-	//			nCOLUMN = countWriteAddress(writeAddress) >> 8;
-	//			writeAddress = countWriteAddress(writeAddress);
-	//			if (MCCK == 1)
-	//			{
-	//				modCount = modCount + 1;
-	//				if (modCount > 8191)
-	//				{
-	//					modCount = 0;
-	//				}
-	//				gainModContBaseAddr = (modCount >> 6) << 5;
-	//				gainModBaseAddr = modCount << 7;
-	//				gainModBaseAddr = gainModBaseAddr >> 4;
-	//				delayModCount = modCount >> 6;
-	//				delayModBaseAddr = delayModCount << 5;
-	//			}
-	//		}
-	//		deEmphasis.process(juce::dsp::ProcessContextReplacing <float>(outputBlock)); //deEmphasis
-	//		//add output samples to buffer
-	//		buffer.copyFrom(0, 0, mOutputBuffer, 0, 0, bufferLength);
-	//		buffer.copyFrom(1, 0, mOutputBuffer, 1, 0, bufferLength);
-	//	}
-	//	//clear input buffer
-	//	mInputBuffer.clear(0, 0, bufferLength);
-	//}
-
 }
-
-void NewProjectAudioProcessor::fillBuffer(int channel, int bufferSizeTest, int delayBufferSizeTest, float* channelData, float summingGain)
-{
-	if (delayBufferSizeTest > bufferSizeTest + writePositionTest)
-	{
-		delayBufferTest.copyFromWithRamp(channel, writePositionTest, channelData, bufferSizeTest, summingGain, summingGain);
-	}
-	else
-	{
-		auto numSamplesToEnd = delayBufferSizeTest - writePositionTest;
-		delayBufferTest.copyFromWithRamp(channel, writePositionTest, channelData, numSamplesToEnd, summingGain, summingGain);
-		auto numSamplesAtStart = bufferSizeTest - numSamplesToEnd;
-		delayBufferTest.copyFromWithRamp(channel, 0, channelData + numSamplesToEnd, numSamplesAtStart, summingGain, summingGain);
-	}
-}
-
-void NewProjectAudioProcessor::readFromBuffer(int delayBufferSizeTest, int bufferSizeTest, int channel, juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& delayBufferTest, float outputDelayTime, float outputDelayGain)
-{
-	auto readPositionTest = static_cast<int>(writePositionTest - (getSampleRate() * outputDelayTime));
-	if (readPositionTest < 0)
-	{
-		readPositionTest += delayBufferSizeTest;
-	}
-	if (readPositionTest + bufferSizeTest < delayBufferSizeTest)
-	{
-		buffer.addFromWithRamp(channel, 0, delayBufferTest.getReadPointer(channel, readPositionTest), bufferSizeTest, outputDelayGain, outputDelayGain);
-	}
-	else
-	{
-		auto numSamplesToEnd = delayBufferSizeTest - readPositionTest;
-		buffer.addFromWithRamp(channel, 0, delayBufferTest.getReadPointer(channel, readPositionTest), numSamplesToEnd, outputDelayGain, outputDelayGain);
-		auto numSamplesAtStart = bufferSizeTest - numSamplesToEnd;
-		buffer.addFromWithRamp(channel, numSamplesToEnd, delayBufferTest.getReadPointer(channel, 0), numSamplesAtStart, outputDelayGain, outputDelayGain);
-	}
-}
-
 //==============================================================================
 bool NewProjectAudioProcessor::hasEditor() const
 {
