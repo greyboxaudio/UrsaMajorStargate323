@@ -352,7 +352,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		buffer.clear(i, 0, buffer.getNumSamples());
 
 	auto bufferSizeTest = buffer.getNumSamples();
-	auto delayBufferSizeTest = delayBufferTest.getNumSamples();
 
 	//read program selection from the UI
 	mProgramID = *apvts.getRawParameterValue("PROGRAM");
@@ -391,41 +390,61 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	preEmphasis.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
 	inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
 	inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	//fill feedback buffer
-	mFeedbackBuffer.copyFrom(0, 0, monoBuffer, 0, 0, bufferSizeTest);
-	auto* data = mFeedbackBuffer.getReadPointer(0);
-	//this is the emulation of the original Stargate 323's internal logic.
-	//The original unit is highly parallelized and needs to process each sample individually.
-	//the calculations for delay & gain modulation is also on a per-sample basis
+	//pre-process feedback buffer
+	feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	//sum input buffer & feedback buffer together
+	monoBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferSizeTest);
+	auto* data = monoBuffer.getReadPointer(0);
+	//clear feedback buffer
+	//mFeedbackBuffer.clear(0, 0, bufferSizeTest);
+	//apply anti-aliasing filter
+	gainModule.setGainLinear(s1gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasFirstSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	gainModule.setGainLinear(s2gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasSecondSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	gainModule.setGainLinear(s3gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasThirdSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	//quantize samples to 16bit
 	for (int i = 0; i < bufferSizeTest; ++i)
 	{
+		float trim = 0.5f;
+		float sampleRounded = monoBuffer.getSample(0, i) * trim;
+		monoBuffer.setSample(0, i, roundBits(sampleRounded));
+	}
+	//left output taps
+	for (int i = 0; i < bufferSizeTest; i++)
+	{
+		fractionalDelay.pushSample(0, data[i]);
 		// calculate base address factors
 		gainBaseAddr = (decayTime << 5) | (program << 8);
 		preDelay_high = preDelay >> 3;
 		preDelay_low = preDelay << 5;
 		preDelay_low = preDelay_low >> 5;
 		delayBaseAddr = (preDelay_low << 6) | (program << 9) | (preDelay_high << 12);
-		// calculate feedback taps
+		// calculate write tap (=test tap)
 		int rowInput = nROW;
 		int columnInput = nCOLUMN;
+		mWritePosition = static_cast<int>(calculateAddress(rowInput, columnInput, lastSampleRate));
+		////round sample to 16bits
+		//float sampleRounded = mInputBuffer.getSample(channel, y);
+		//mInputBuffer.setSample(channel, y, roundBits(sampleRounded));
+		////write sample
+		//mDelayBuffer.copyFrom(channel, mWritePosition, mInputBuffer, channel, y, 1);
+		// calculate feedback taps
 		delayModAddress = delayModBaseAddr + 7;
 		delayAddress = delayBaseAddr + 16;
 		gainModContAddress = gainModContBaseAddr + 8;
 		gainAddress = gainBaseAddr + 8;
-		float feedbackSample{};
 		for (int d = 0; d < 15; d++)
 		{
 			rowInput = U79[delayModAddress + d] + nROW;
 			columnInput = U69[delayAddress + d * 2] + nCOLUMN;
-			int delayTimeValue = calculateAddress(rowInput, columnInput, lastSampleRate);
-			int readIndex = writeArray[delayTimeValue];
-			int writeIndex = writeArray[writeAddress];
-			float feedbackDelayTime = writeIndex - readIndex;
-			if (feedbackDelayTime < 1)
-			{
-				feedbackDelayTime += 16384;
-			}
-			feedbackDelayTime *= 0.00003125;
+			delayTaps[1 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
 			gainModContOut = U76[gainModContAddress + d];
 			nGainModEnable = gainModContOut >> 3;
 			gainModContOut = gainModContOut << 5;
@@ -443,6 +462,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			}
 			nGSN = U78[gainAddress + d] >> 7;
 			signMod[1 + d] = nGSN;
+			mReadPosition = delayTaps[1 + d];
 			if (signMod[1 + d] == 0)
 			{
 				mFeedbackGain = (gainCeiling[1 + d] / 256.0f) * -1.0f;
@@ -451,22 +471,91 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			{
 				mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
 			}
-			//experimental fractional delay
-			fractionalDelay.pushSample(0, data[i]);
-			feedbackSample += (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate, false) * mFeedbackGain);
+			//mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
 		}
-		float feedbackGainMult{ -0.2f };
-		mFeedbackBuffer.setSample(0, i, feedbackSample * feedbackGainMult);
+		mFeedbackTaps = mFeedbackTaps / 15.0f;
+		//mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
+		// calculate output taps
+		gainAddress = gainBaseAddr + 23;
+		delayModAddress = delayBaseAddr + 45;
+		delayAddress = delayBaseAddr + 46;
+		//left output taps
+		for (int d = 0; d < 3; d++)
+		{
+			rowInput = U69[delayModAddress + d * 2] + nROW;
+			columnInput = U69[delayAddress + d * 2] + nCOLUMN;
+			delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
+			gainOut = U78[gainAddress + d] << 1;
+			gainCeiling[16 + d] = gainOut;
+			nGSN = U78[gainAddress + d] >> 7;
+			signMod[16 + d] = nGSN;
+			mReadPosition = delayTaps[16 + d];
+			if (signMod[16 + d] == 0)
+			{
+				mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+			}
+			else
+			{
+				mOutputGain = (gainCeiling[16 + d] / 256.0f);
+			}
+			//mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
+		}
+		mOutputTaps = mOutputTaps / 4.0f;
+		//mOutputBuffer.setSample(0, y, mOutputTaps);
+		//right output taps
+		for (int d = 4; d < 8; d++)
+		{
+			rowInput = U69[delayModAddress + d * 2] + nROW;
+			columnInput = U69[delayAddress + d * 2] + nCOLUMN;
+			delayTaps[16 + d] = calculateAddress(rowInput, columnInput, lastSampleRate);
+			gainOut = U78[gainAddress + d] << 1;
+			gainCeiling[16 + d] = gainOut;
+			nGSN = U78[gainAddress + d] >> 7;
+			signMod[16 + d] = nGSN;
+			mReadPosition = delayTaps[16 + d];
+			if (signMod[16 + d] == 0)
+			{
+				mOutputGain = (gainCeiling[16 + d] / 256.0f) * -1.0f;
+			}
+			else
+			{
+				mOutputGain = (gainCeiling[16 + d] / 256.0f);
+			}
+			//mOutputTaps += mDelayBuffer.getSample(0, mReadPosition) * mOutputGain;
+		}
+		mOutputTaps = mOutputTaps / 4.0f;
+		//mOutputBuffer.setSample(1, y, mOutputTaps);
 		//process random sample
 		float randomSample = mRandomBuffer.getSample(0, i);
 		if (randomSample < 0)
 		{
-			randomSample *= -0.33f;
+			randomSample = randomSample * -0.33f;
 		}
 		//scale randomSample by a certain amount
-		randomSample *= 8.0f;
-		rateLevel = rngsus(randomSample);
-		//mod rate counter
+		randomSample = randomSample * 8.0f;
+		//calculate rateLVL value
+		int num1{ 0 };
+		int num2{ 0 };
+		int num3{ 0 };
+		int num4{ 0 };
+		if (randomSample >= 0.011f)
+		{
+			num1 = 1;
+		}
+		if (randomSample >= 0.0356f)
+		{
+			num2 = 2;
+		}
+		if (randomSample >= 0.0916f)
+		{
+			num3 = 4;
+		}
+		if (randomSample >= 0.317f)
+		{
+			num4 = 8;
+		}
+		rateLevel = num1 + num2 + num3 + num4;
+		// mod rate counter
 		modClockOut = modClockOut + 1;
 		if (modClockOut == modRateCeiling)
 		{
@@ -483,11 +572,9 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		{
 			MCCK = 0;
 		}
-		//increment writeAddress
 		nROW = countWriteAddress(writeAddress);
 		nCOLUMN = countWriteAddress(writeAddress) >> 8;
 		writeAddress = countWriteAddress(writeAddress);
-		//check if modulation counter increments
 		if (MCCK == 1)
 		{
 			modCount = modCount + 1;
@@ -501,64 +588,29 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			delayModCount = modCount >> 6;
 			delayModBaseAddr = delayModCount << 5;
 		}
-	}
-	//pre-process feedback buffer
-	feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	//sum input buffer & feedback buffer together
-	monoBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferSizeTest);
-	//clear feedback buffer
-	mFeedbackBuffer.clear(0, 0, bufferSizeTest);
-	//apply anti-aliasing filter
-	gainModule.setGainLinear(s1gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasFirstSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	gainModule.setGainLinear(s2gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasSecondSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	gainModule.setGainLinear(s3gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasThirdSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	//quantize samples to 16bit
-	//for (int i = 0; i < bufferSizeTest; ++i)
-	//{
-	//	float trim = 0.5f;
-	//	float sampleRounded = monoBuffer.getSample(0, i) * trim;
-	//	monoBuffer.setSample(0, i, roundBits(sampleRounded));
-	//}
-	//fill delay buffer
-	for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-	{
-		int readChannel = 0;
-		auto* channelData = monoBuffer.getWritePointer(readChannel);
-		float summingGain = 1.0f;
-		fillBuffer(channel, bufferSizeTest, delayBufferSizeTest, channelData, summingGain);
-	}
-	//read output taps
-	float outputDelayGainMult = 0.75f;
-	for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-	{
-		if (channel == 0)
+		//fractionalDelay.pushSample(0, data[i]);
+		float outputDelayGainMult = 0.75f;
+		float leftOutputSample{};
+		float rightOutputSample{};
+		float outputDelayTime{};
+		float outputDelayGain{};
+		for (int d = 0; d < 4; d++)
 		{
-			//left output taps
-			for (int d = 0; d < 3; ++d)
-			{
-				float outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
-				float outputDelayGain = outputGainArray[d] * outputDelayGainMult;
-				readFromBuffer(delayBufferSizeTest, bufferSizeTest, channel, mOutputBuffer, delayBufferTest, outputDelayTime, outputDelayGain);
-			}
+			outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
+			outputDelayGain = outputGainArray[d] * outputDelayGainMult;
+			leftOutputSample += fractionalDelay.popSample(0, outputDelayTime * lastSampleRate, false) * outputDelayGain;
 		}
-		if (channel == 1)
+		for (int d = 4; d < 7; d++)
 		{
-			//right output taps
-			for (int d = 4; d < 8; ++d)
-			{
-				float outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
-				float outputDelayGain = outputGainArray[d] * outputDelayGainMult;
-				readFromBuffer(delayBufferSizeTest, bufferSizeTest, channel, mOutputBuffer, delayBufferTest, outputDelayTime, outputDelayGain);
-			}
+			outputDelayTime = ((mProgramID * outputDelayArray[d]) + outputDelayArray[d + 8] + adjustablePreDelay) * 0.001f;
+			outputDelayGain = outputGainArray[d] * outputDelayGainMult;
+			rightOutputSample += fractionalDelay.popSample(0, outputDelayTime * lastSampleRate, false) * outputDelayGain;
 		}
+		outputDelayTime = ((mProgramID * outputDelayArray[7]) + outputDelayArray[7 + 8] + adjustablePreDelay) * 0.001f;
+		outputDelayGain = outputGainArray[7] * outputDelayGainMult;
+		rightOutputSample += fractionalDelay.popSample(0, outputDelayTime * lastSampleRate, true) * outputDelayGain;
+		mOutputBuffer.setSample(0, i, leftOutputSample);
+		mOutputBuffer.setSample(1, i, rightOutputSample);
 	}
 	//apply de-emphasis filter on output taps
 	deEmphasis.process(juce::dsp::ProcessContextReplacing <float>(outputBlock));
@@ -567,10 +619,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	{
 		buffer.copyFrom(channel, 0, mOutputBuffer, channel, 0, bufferSizeTest);
 	}
-	//advance write position
-	writePositionTest += bufferSizeTest;
-	writePositionTest %= delayBufferSizeTest;
-
 	////legacy code block
 	//mInputBuffer.setSize(1, buffer.getNumSamples());
 	//mRandomBuffer.setSize(1, buffer.getNumSamples());
