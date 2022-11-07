@@ -13,20 +13,32 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {   
-    predelaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    predelaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 50);
+    predelaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
     addAndMakeVisible(predelaySlider);
     predelaySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "PREDELAY", predelaySlider);
 
-    decaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    decaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 50);
+    addAndMakeVisible(predelayLabel);
+    predelayLabel.setText("PREDLY", juce::dontSendNotification);
+    predelayLabel.attachToComponent(&predelaySlider, false);
+    predelayLabel.setJustificationType(juce::Justification::centred);
+
+    decaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
     addAndMakeVisible(decaySlider);
     decaySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "DECAY", decaySlider);
 
-    wetDrySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    wetDrySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 50);
+    addAndMakeVisible(decayLabel);
+    decayLabel.setText("DECAY", juce::dontSendNotification);
+    decayLabel.attachToComponent(&decaySlider, false);
+    decayLabel.setJustificationType(juce::Justification::centred);
+
+    wetDrySlider.setSliderStyle(juce::Slider::SliderStyle::LinearBarVertical);
     addAndMakeVisible(wetDrySlider);
     wetDrySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "WETDRY", wetDrySlider);
+
+    addAndMakeVisible(wetDryLabel);
+    wetDryLabel.setText("MIX", juce::dontSendNotification);
+    wetDryLabel.attachToComponent(&wetDrySlider, false);
+    wetDryLabel.setJustificationType(juce::Justification::centred);
 
     programBox.addItem("Plate 1", 1);
     programBox.addItem("Plate 2", 2);
@@ -41,7 +53,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     programBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "PROGRAM", programBox);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (250, 350);
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()
@@ -65,8 +77,8 @@ void NewProjectAudioProcessorEditor::resized()
     // subcomponents in your editor..
     auto bounds = getLocalBounds();
     //const int componentSize(80);
-    programBox.setBounds(bounds.removeFromTop(200).withSizeKeepingCentre(120, 60));
-    predelaySlider.setBounds(140, 180, 120, 60);
-    decaySlider.setBounds(10, 180, 120, 60);
-    wetDrySlider.setBounds(270, 180, 120, 60);
+    programBox.setBounds(bounds.removeFromTop(100).withSizeKeepingCentre(120, 60));
+    predelaySlider.setBounds(25, 120, 50, 200);
+    decaySlider.setBounds(100, 120, 50, 200);
+    wetDrySlider.setBounds(175, 120, 50, 200);
 }

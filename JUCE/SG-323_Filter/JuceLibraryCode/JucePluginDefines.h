@@ -50,7 +50,7 @@
  #define JucePlugin_Manufacturer           "krabbencutter"
 #endif
 #ifndef  JucePlugin_ManufacturerWebsite
- #define JucePlugin_ManufacturerWebsite    "www.krabbencutter.com"
+ #define JucePlugin_ManufacturerWebsite    "https://github.com/ravettel"
 #endif
 #ifndef  JucePlugin_ManufacturerEmail
  #define JucePlugin_ManufacturerEmail      ""

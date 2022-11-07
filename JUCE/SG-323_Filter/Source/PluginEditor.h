@@ -31,6 +31,9 @@ private:
     juce::Slider decaySlider;
     juce::Slider wetDrySlider;
     juce::ComboBox programBox;
+    juce::Label predelayLabel;
+    juce::Label decayLabel;
+    juce::Label wetDryLabel;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decaySliderAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> predelaySliderAttachment;
