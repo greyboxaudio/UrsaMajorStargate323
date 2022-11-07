@@ -440,7 +440,7 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		delayAddress = delayBaseAddr + 16;
 		gainModContAddress = gainModContBaseAddr + 8;
 		gainAddress = gainBaseAddr + 8;
-		float feedbackDelayGainMult = -0.6667f;
+		float feedbackDelayGainMult = -0.6f;
 		float feedbackOutputSample{};
 		float feedbackDelayTime{};
 		float feedbackDelayGain{};
