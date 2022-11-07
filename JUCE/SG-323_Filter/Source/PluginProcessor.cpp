@@ -440,6 +440,10 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 		delayAddress = delayBaseAddr + 16;
 		gainModContAddress = gainModContBaseAddr + 8;
 		gainAddress = gainBaseAddr + 8;
+		float feedbackDelayGainMult = -0.6667f;
+		float feedbackOutputSample{};
+		float feedbackDelayTime{};
+		float feedbackDelayGain{};
 		for (int d = 0; d < 15; d++)
 		{
 			rowInput = U79[delayModAddress + d] + nROW;
@@ -471,10 +475,21 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			{
 				mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
 			}
+			int writeIndex = writeAddressArray[mWritePosition];
+			int readIndex = writeAddressArray[mReadPosition];
+			feedbackDelayTime = writeIndex - readIndex;
+			if (feedbackDelayTime < 1)
+			{
+				feedbackDelayTime += 16384;
+			}
+			feedbackDelayTime *= 0.00003125f;
+			feedbackDelayGain = mFeedbackGain * feedbackDelayGainMult;
+			feedbackOutputSample += fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate, false) * feedbackDelayGain;
 			//mFeedbackTaps += mDelayBuffer.getSample(0, mReadPosition) * mFeedbackGain;
 		}
 		mFeedbackTaps = mFeedbackTaps / 15.0f;
 		//mFeedbackBuffer.setSample(0, y, mFeedbackTaps);
+		mFeedbackBuffer.setSample(0, i, feedbackOutputSample);
 		// calculate output taps
 		gainAddress = gainBaseAddr + 23;
 		delayModAddress = delayBaseAddr + 45;
