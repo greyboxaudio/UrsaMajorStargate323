@@ -142,6 +142,9 @@ void NewProjectAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBl
 	antiAliasThirdSection.reset();
 	gainModule.prepare(spec);
 	gainModule.reset();
+	fractionalDelay.prepare(spec);
+	fractionalDelay.reset();
+	fractionalDelay.setMaximumDelayInSamples(delayBufferTestSize);
 	if (sampleRate == 44100.0)
 	{
 		s1b0 = 1.0f;
@@ -389,58 +392,8 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 	inputHighPass.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
 	inputLowPass.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
 	//fill feedback buffer
-	for (int i = 0; i < 15; i++)
-	{
-		int readPositionTest = static_cast<int>(writePositionTest - (getSampleRate() * feedbackTime[i]));
-		float feedbackGainMult = -0.3334;
-		if (readPositionTest < 0)
-		{
-			readPositionTest += delayBufferSizeTest;
-		}
-		if (readPositionTest + bufferSizeTest < delayBufferSizeTest)
-		{
-			mFeedbackBuffer.addFromWithRamp(0, 0, delayBufferTest.getReadPointer(0, readPositionTest), bufferSizeTest, feedbackStartGain[i] * feedbackGainMult, feedbackEndGain[i] * feedbackGainMult);
-		}
-		else
-		{
-			auto numSamplesToEnd = delayBufferSizeTest - readPositionTest;
-			mFeedbackBuffer.addFromWithRamp(0, 0, delayBufferTest.getReadPointer(0, readPositionTest), numSamplesToEnd, feedbackStartGain[i] * feedbackGainMult, feedbackEndGain[i] * feedbackGainMult);
-			auto numSamplesAtStart = bufferSizeTest - numSamplesToEnd;
-			mFeedbackBuffer.addFromWithRamp(0, numSamplesToEnd, delayBufferTest.getReadPointer(0, 0), numSamplesAtStart, feedbackStartGain[i] * feedbackGainMult, feedbackEndGain[i] * feedbackGainMult);
-		}
-	}
-	//pre-process feedback buffer
-	feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
-	//sum input buffer & feedback buffer together
-	monoBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferSizeTest);
-	mFeedbackBuffer.clear(0, 0, bufferSizeTest);
-	//apply anti-aliasing filter
-	gainModule.setGainLinear(s1gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasFirstSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	gainModule.setGainLinear(s2gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasSecondSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	gainModule.setGainLinear(s3gain);
-	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	antiAliasThirdSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
-	//quantize samples to 16bit
-	//for (int i = 0; i < bufferSizeTest; ++i)
-	//{
-	//	float trim = 0.5f;
-	//	float sampleRounded = monoBuffer.getSample(0, i) * trim;
-	//	monoBuffer.setSample(0, i, roundBits(sampleRounded));
-	//}
-	//fill delay buffer
-	for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-	{
-		int readChannel = 0;
-		auto* channelData = monoBuffer.getWritePointer(readChannel);
-		float summingGain = 1.0f;
-		fillBuffer(channel, bufferSizeTest, delayBufferSizeTest, channelData, summingGain);
-	}
+	mFeedbackBuffer.copyFrom(0, 0, monoBuffer, 0, 0, bufferSizeTest);
+	auto* data = mFeedbackBuffer.getWritePointer(0);
 	//this is the emulation of the original Stargate 323's internal logic.
 	//The original unit is highly parallelized and needs to process each sample individually.
 	//the calculations for delay & gain modulation is also on a per-sample basis
@@ -472,7 +425,6 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 				feedbackDelayTime += 16384;
 			}
 			feedbackDelayTime *= 0.00003125;
-			feedbackTime[d] = feedbackDelayTime;
 			gainModContOut = U76[gainModContAddress + d];
 			nGainModEnable = gainModContOut >> 3;
 			gainModContOut = gainModContOut << 5;
@@ -498,16 +450,19 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			{
 				mFeedbackGain = (gainCeiling[1 + d] / 256.0f);
 			}
-			float feedbackGainMult{ -0.0666f };
+			float feedbackGainMult{ -0.2f };
 			float feedbackSampleGain = mFeedbackGain * feedbackGainMult;
-			if (i == 0)
+			//experimental fractional delay
+			fractionalDelay.pushSample(0, data[i]);
+			if (d == 0)
 			{
-				feedbackStartGain[d] = mFeedbackGain;
+				data[i] = (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate) * feedbackSampleGain);
 			}
-			if (i == bufferSizeTest)
+			else
 			{
-				feedbackEndGain[d] = mFeedbackGain;
+				data[i] += (fractionalDelay.popSample(0, feedbackDelayTime * lastSampleRate) * feedbackSampleGain);
 			}
+			
 		}
 		//process random sample
 		float randomSample = mRandomBuffer.getSample(0, i);
@@ -553,6 +508,39 @@ void NewProjectAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 			delayModCount = modCount >> 6;
 			delayModBaseAddr = delayModCount << 5;
 		}
+	}
+	//pre-process feedback buffer
+	feedBackHighPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	feedBackLowPass.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	feedBackDip.process(juce::dsp::ProcessContextReplacing <float>(feedbackBlock));
+	//sum input buffer & feedback buffer together
+	monoBuffer.addFrom(0, 0, mFeedbackBuffer, 0, 0, bufferSizeTest);
+	//clear feedback buffer
+	mFeedbackBuffer.clear(0, 0, bufferSizeTest);
+	//apply anti-aliasing filter
+	gainModule.setGainLinear(s1gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasFirstSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	gainModule.setGainLinear(s2gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasSecondSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	gainModule.setGainLinear(s3gain);
+	gainModule.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	antiAliasThirdSection.process(juce::dsp::ProcessContextReplacing <float>(monoBlock));
+	//quantize samples to 16bit
+	//for (int i = 0; i < bufferSizeTest; ++i)
+	//{
+	//	float trim = 0.5f;
+	//	float sampleRounded = monoBuffer.getSample(0, i) * trim;
+	//	monoBuffer.setSample(0, i, roundBits(sampleRounded));
+	//}
+	//fill delay buffer
+	for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+	{
+		int readChannel = 0;
+		auto* channelData = monoBuffer.getWritePointer(readChannel);
+		float summingGain = 1.0f;
+		fillBuffer(channel, bufferSizeTest, delayBufferSizeTest, channelData, summingGain);
 	}
 	//read output taps
 	float outputDelayGainMult = 0.75f;
