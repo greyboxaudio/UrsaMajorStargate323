@@ -2,25 +2,22 @@
 #include <stdint.h>
 #include <stdio.h>
 
-int calculateAddress(unsigned short rowInput, unsigned short columnInput)
+unsigned int calculateAddress(unsigned int rowInput, unsigned int columnInput)
 {
     // calculate address row
-    unsigned short result = rowInput;
-    unsigned char bit6 = (result & 64) >> 6;
-    unsigned char MSB = result >> 7;    
-    unsigned char delayCarryOut = result >> 8;
-    unsigned char rowDelay = result << 2;
-    rowDelay = (rowDelay >> 1) | bit6 | (MSB << 7);
+    unsigned int bit6 = (rowInput & 64) >> 6;
+    unsigned int MSB = (rowInput & 128) >> 7;    
+    unsigned int delayCarryOut = rowInput >> 8;
+    unsigned int rowDelay = ((rowInput << 1) & 126) | bit6 | (MSB << 7);
     // calculate address column
-    result = columnInput + delayCarryOut;
-    unsigned char columnDelay = result & 63;
+    unsigned int columnDelay = (columnInput + delayCarryOut) & 63;
     return ((rowDelay) + (columnDelay * 256));
 }
 
-int countWriteAddress(short writeAddress)
+int countWriteAddress(int writeAddress)
 {
     // advance write address & wraparound if < 0
-    short writeAddressIncr = writeAddress - 1;
+    int writeAddressIncr = writeAddress - 1;
     if (writeAddressIncr < 0)
     {
         writeAddressIncr = 16383;
@@ -44,7 +41,7 @@ int main()
     float adjustableWetDry{0.5f};
     float nextHighPassValue{20.0f};
     float nextLowPassValue{16000.0f};
-    short writeAddress{16383};
+    int writeAddress{16383};
     unsigned char nROW{255};
     unsigned char nCOLUMN{255};
     unsigned short modRateCeiling{16};
@@ -64,7 +61,7 @@ int modRateCountData[128]{12, 12, 12, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
     int programId = 7;
     unsigned char decayTime = 7;
     unsigned char rateLevel = 0;
-    int t = 212992; // machine frames for testing, 212992 for a full set
+    int t = 16384; // machine frames for testing, 212992 for a full set
     FILE *fp;
     fp = fopen("Output_NoRNG.txt", "w");
 
@@ -106,13 +103,13 @@ int modRateCountData[128]{12, 12, 12, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
             columnInput = delayData[delayAddress + d * 2] + nCOLUMN;
             delayTaps[1 + d] = calculateAddress(rowInput, columnInput);
 
-            unsigned char gainModContOut = gainModControlData[gainModContAddress + d];
-            unsigned char nGainModEnable = gainModContOut >> 3;
-            gainModContOut = gainModContOut << 5;
-            gainModContOut = gainModContOut >> 5;
+            unsigned int gainModContOut = gainModControlData[gainModContAddress + d] & 7;
+            unsigned int nGainModEnable = gainModControlData[gainModContAddress + d] >> 3;
+            //gainModContOut = gainModContOut & 7;
+            //gainModContOut = gainModContOut >> 5;
             unsigned short gainModAddress = gainModContOut | gainModBaseAddr;
-            unsigned char gainModOut = gainModData[gainModAddress];
-            unsigned char gainOut = gainData[gainAddress + d] << 1;
+            unsigned int gainModOut = gainModData[gainModAddress] & 255;
+            unsigned int gainOut = (gainData[gainAddress + d] << 1) & 255;
             if (gainModOut < gainOut && nGainModEnable == 0)
             {
                 gainCeiling[1 + d] = gainModOut;
@@ -121,7 +118,7 @@ int modRateCountData[128]{12, 12, 12, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
             {
                 gainCeiling[1 + d] = gainOut;
             }
-            unsigned char nGSN = gainData[gainAddress + d] >> 7;
+            unsigned int nGSN = (gainData[gainAddress + d] & 255) >> 7;
             signMod[1 + d] = nGSN;
         }
         //calculate output taps
