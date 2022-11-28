@@ -52,7 +52,7 @@ int main()
     __uint8_t program = 7;   // program from low to high (3,2,0,1,5,4,6,7)
     __uint8_t decayTime = 7; // decay times from low to high (3,2,0,1,5,4,6,7)
     __uint8_t rateLvl = 0;   // 0,1,3,7,15 RNG for testing
-    int t = 212992; //machine frames for testing
+    int t = 131072; //machine frames for testing
     FILE *fp;
     fp = fopen("Output_NoRNG_REF.txt", "w");
 
