@@ -39,6 +39,7 @@ int main()
     unsigned long delayTaps[24];
     unsigned int gainCeiling[24];
     signed int signMod[24];
+    float gain[24];
     unsigned int modClockOut{};
     unsigned int modCount{};
     int initSampleRateCount{};
@@ -60,7 +61,7 @@ int main()
     int programId = 7;
     unsigned int decayTime = 7;
     unsigned int rateLevel = 0;
-    int t = 131072; // machine frames for testing, 212992 for a full set
+    int t = 65536; // machine frames for testing, 212992 for a full set
     FILE *fp;
     fp = fopen("Output_NoRNG.txt", "w");
 
@@ -83,6 +84,7 @@ int main()
         int nGSN = 0;
         // store gain value
         gainCeiling[0] = gainOut; // only needed for testing purposes
+        gain[0] = gainOut / 256.0f;
         // store sign
         signMod[0] = nGSN; // only needed for testing purposes
 
@@ -104,8 +106,6 @@ int main()
 
             unsigned int gainModContOut = gainModControlData[gainModContAddress + d] & 7;
             unsigned int nGainModEnable = gainModControlData[gainModContAddress + d] >> 3;
-            // gainModContOut = gainModContOut & 7;
-            // gainModContOut = gainModContOut >> 5;
             unsigned int gainModAddress = gainModContOut | gainModBaseAddr;
             unsigned int gainModOut = gainModData[gainModAddress];
             unsigned int gainOut = (gainData[gainAddress + d] << 1) & 255;
@@ -119,6 +119,14 @@ int main()
             }
             unsigned int nGSN = (gainData[gainAddress + d]) >> 7;
             signMod[1 + d] = nGSN;
+            if (nGSN == 0)
+            {
+                gain[1 + d] = (gainCeiling[1 + d] / 256.0f) * -1.0f;
+            }
+            else
+            {
+                gain[1 + d] = (gainCeiling[1 + d] / 256.0f);
+            }
         }
         // calculate output taps
         float outputDelayGainMult = 0.75f;
@@ -175,7 +183,7 @@ int main()
         fprintf(fp, "%5i / ", j);
         for (int k = 0; k < 16; k++)
         {
-            fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+            fprintf(fp, "%2i|%-3f|%-5i ", k + 1, gain[k], delayTaps[k]);
         }
         if (j < t - 1)
         {

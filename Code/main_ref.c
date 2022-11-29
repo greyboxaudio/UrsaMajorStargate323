@@ -52,7 +52,7 @@ int main()
     __uint8_t program = 7;   // program from low to high (3,2,0,1,5,4,6,7)
     __uint8_t decayTime = 7; // decay times from low to high (3,2,0,1,5,4,6,7)
     __uint8_t rateLvl = 0;   // 0,1,3,7,15 RNG for testing
-    int t = 131072; //machine frames for testing
+    int t = 65536; //machine frames for testing
     FILE *fp;
     fp = fopen("Output_NoRNG_REF.txt", "w");
 
@@ -272,7 +272,7 @@ int main()
                 gain[k] = (gainCeiling[k] / 256.0);
             }
             //fprintf(fp, "%2i|%.2f|%.3f  ", k + 1, delayTime[k], gain[k]);
-            fprintf(fp, "%2i|%3i|%-5i ", k + 1, gainCeiling[k], delayTaps[k]);
+            fprintf(fp, "%2i|%-3f|%-5i ", k + 1, gain[k], delayTaps[k]);
         }
         if (j < t - 1)
         {
