@@ -60,16 +60,17 @@ int main()
         unsigned int gainModBaseAddr{};
         unsigned int delayModBaseAddr{};
 
-        float fbDelay[15];
-        float fbGain[15];
+        double fbDelay[15];
+        double fbGain[15];
         float previousValue{};
-        float previousTime{};
+        int previousTime{};
         float initValue{};
-        int programId{ 7 };
+        int programId{ 1 };
+        unsigned int rateLevel{ 0 }; //
         int t = 524288; // machine frames for testing, 212992 for a full set
         FILE* fp;
         errno_t err;
-        err = fopen_s(&fp, "Output_FB1_noRNG.txt", "w");
+        err = fopen_s(&fp, "Output_Program8_Gain_noRNG.csv", "w");
         int k{ 0 };
         // main loop
         for (int j = 0; j < t; j++)
@@ -87,10 +88,6 @@ int main()
             unsigned int delayAddress = delayBaseAddr + 16;
             unsigned int gainModContAddress = gainModContBaseAddr + 8;
             unsigned int gainAddress = gainBaseAddr + 8;
-            float feedbackDelayGainMult = -0.29f;
-            float feedbackOutputSample{};
-            int feedbackDelayTime{};
-            float feedbackDelayGain{};
             for (int d = 0; d < 15; d++)
             {
                 rowInput = delayModData[delayModAddress + d] + nROW;
@@ -111,27 +108,25 @@ int main()
                 }
                 unsigned int nGSN = (gainData[gainAddress + d]) >> 7;
                 long readPosition = delayTaps[1 + d];
-                float feedbackGain{};
+                double feedbackGain{};
                 if (nGSN == 0)
                 {
-                    feedbackGain = gainCeiling[1 + d] * -0.00390625f;
+                    feedbackGain = gainCeiling[1 + d] * -0.00390625;
                 }
                 else
                 {
-                    feedbackGain = gainCeiling[1 + d] * 0.00390625f;
+                    feedbackGain = gainCeiling[1 + d] * 0.00390625;
                 }
                 int writeIndex = writeAddressArray[writePosition];
                 int readIndex = writeAddressArray[readPosition];
-                feedbackDelayTime = writeIndex - readIndex;
+                int feedbackDelayTime = writeIndex - readIndex;
                 if (feedbackDelayTime < 1)
                 {
                     feedbackDelayTime += 16384;
                 }
-                fbDelay[d] = feedbackDelayTime * 0.00003125f;
+                fbDelay[d] = feedbackDelayTime * 0.00003125;
                 fbGain[d] = feedbackGain;
             }
-            // calculate rateLVL value
-            unsigned int rateLevel{ 0 };
             // mod rate counter
             modClockOut += 1;
             if (modClockOut == modRateCeiling)
@@ -164,20 +159,30 @@ int main()
             }
             // print out debug data
             // calculate modulation frequency in Hz
-            float value = fbGain[k];
+            /*
+            float value = fbDelay[k];
             float maxValue = 0.99f;
             if (j == 0)
             {
                 initValue = value;
             }
-            if (abs(value) >= maxValue && previousValue != value)
+            if (previousValue != value && (abs(value) >= maxValue || abs(previousValue) >= maxValue))
             {
-                double t1 = 1/((j - previousTime + 1) / 32000);
-                fprintf(fp, "%f Hz\n", t1);
+                double t1 = 1.0/((j - previousTime + 1) / 32000.0);
+                fprintf(fp, "%f Hz %i %f %f\n", t1,j,previousValue,value);
                 previousTime = j;
             }
             previousValue = value;
-            //fprintf(fp, "%f\n", value);
+            */
+            if (j == 0)
+            {
+                fprintf(fp, "Tap1,Tap2,Tap3,Tap4,Tap5,Tap6,Tap7,Tap8,Tap9,Tap10,Tap11,Tap12,Tap13,Tap14,Tap15\n");
+            }
+            for (int i = 0; i < 15; i++)
+            {
+                fprintf(fp, "%f,", fbGain[i]);
+            }
+            fprintf(fp, "\n");
         }
         fclose(fp);
         return 0;
