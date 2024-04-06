@@ -67,10 +67,10 @@ int main()
         float initValue{};
         int programId{ 1 };
         unsigned int rateLevel{ 0 }; //
-        int t = 524288; // machine frames for testing, 212992 for a full set
+        int t = 65536; // machine frames for testing, 212992 for a full set
         FILE* fp;
         errno_t err;
-        err = fopen_s(&fp, "Output_Program8_Gain_noRNG.csv", "w");
+        err = fopen_s(&fp, "Output_Program8_Delay_noRNG.csv", "w");
         int k{ 0 };
         // main loop
         for (int j = 0; j < t; j++)
@@ -176,11 +176,13 @@ int main()
             */
             if (j == 0)
             {
-                fprintf(fp, "Tap1,Tap2,Tap3,Tap4,Tap5,Tap6,Tap7,Tap8,Tap9,Tap10,Tap11,Tap12,Tap13,Tap14,Tap15\n");
+                fprintf(fp, "Time,Tap1,Tap2,Tap3,Tap4,Tap5,Tap6,Tap7,Tap8,Tap9,Tap10,Tap11,Tap12,Tap13,Tap14,Tap15,\n");
             }
+            double time = (j + 1) * 0.00003125;
+            fprintf(fp, "%f,", time);
             for (int i = 0; i < 15; i++)
             {
-                fprintf(fp, "%f,", fbGain[i]);
+                fprintf(fp, "%f,", fbDelay[i]);
             }
             fprintf(fp, "\n");
         }
