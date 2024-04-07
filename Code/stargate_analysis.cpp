@@ -66,11 +66,11 @@ int main()
         int previousTime{};
         float initValue{};
         int programId{ 1 };
-        unsigned int rateLevel{ 0 }; //
-        int t = 65536; // machine frames for testing, 212992 for a full set
+        unsigned int rateLevel{ 15 }; // 0,1,3,7,15
+        int t = 49161; // machine frames for testing, 212992 for a full set (?) however the longest pattern seems to repeat after 49162 cycles...
         FILE* fp;
         errno_t err;
-        err = fopen_s(&fp, "Output_Program8_Delay_noRNG.csv", "w");
+        err = fopen_s(&fp, "Output_Program8_Delay_RNG15.csv", "w");
         int k{ 0 };
         // main loop
         for (int j = 0; j < t; j++)

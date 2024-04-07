@@ -9,8 +9,8 @@ tStart = datetime.datetime.now()
 print(tStart.time(),"program start")
 
 #modifiable parameters
-csvInput1 = "Output_Program8_Delay_noRNG.csv"
-csvInput2 = "Output_Program8_Gain_noRNG.csv"
+csvInput1 = "Output_Program8_Delay_RNG15.csv"
+csvInput2 = "Output_Program8_Gain_RNG15.csv"
 yticks2 = [-1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0]
 xticks1 = 8191
 xticks2 = 8191
@@ -28,22 +28,22 @@ for x in range(1,16,1):
     y4 = np.max(a)
     yticks1 = [yMin, y1, y3, yMid, y2, y4, yMax]
     plt.figure().set_figwidth(24)
-    plt.plot(df.Time,df.iloc[:,[x]])
+    plt.plot(df.Time,df.iloc[:,[x]],color="red")
     plt.xticks(df.Time[::xticks1])
     plt.yticks(yticks1)
     plt.grid()
-    plt.savefig(("plots/delay_tap"+str(x)+".png"),dpi=600,transparent=True)
+    plt.savefig(("plots/pg8_dly_tap"+str(x)+"_rng15.png"),dpi=300,transparent=True)
     print(datetime.datetime.now()-tStart,"saved plot delay "+str(x))
     plt.close()
 
 df = pd.read_csv(csvInput2)
 for x in range(1,16,1):
     plt.figure().set_figwidth(24)
-    plt.plot(df.Time,df.iloc[:,[x]])
+    plt.plot(df.Time,df.iloc[:,[x]],color="blue")
     plt.xticks(df.Time[::xticks2])
     plt.yticks(yticks2)
     plt.grid()
-    plt.savefig(("plots/gain_tap"+str(x)+".png"),dpi=600,transparent=True)
+    plt.savefig(("plots/pg8_gain_tap"+str(x)+"_rng15.png"),dpi=300,transparent=True)
     print(datetime.datetime.now()-tStart,"saved plot gain "+str(x))
     plt.close()
 
